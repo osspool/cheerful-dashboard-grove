@@ -8,6 +8,7 @@ import {
   Package, 
   ShoppingCart, 
   List, 
+  ScanBarcode, 
   Tag, 
   Settings, 
   Star, 
@@ -53,6 +54,7 @@ export function SideNav() {
           <NavItem icon={Package} label="Inventory" to="/inventory" isActive={path === "/inventory"} />
           <NavItem icon={ShoppingCart} label="Order" to="/order" isActive={path === "/order"} />
           <NavItem icon={List} label="Listing" to="/listing" isActive={path === "/listing"} />
+          <NavItem icon={ScanBarcode} label="Scanner" to="/scanner" isActive={path === "/scanner"} />
           <NavItem icon={Tag} label="Price Rule" to="/price-rule" isActive={path === "/price-rule"} />
         </div>
 

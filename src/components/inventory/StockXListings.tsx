@@ -1,161 +1,90 @@
-
-import React, { useState } from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, ExternalLink, Eye } from 'lucide-react';
-import { formatTimeAgo, formatPrice, getStatusClass } from './listing-utils';
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { ListingOrderDetail } from './ListingOrderDetail';
+import { formatCurrency } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// StockX listing interface
 export interface StockXListing {
-  amount: string;
-  ask: {
-    askId: string;
-    askCreatedAt: string;
-    askUpdatedAt: string;
-    askExpiresAt: string;
-  };
-  order: any;
-  product: {
-    productId: string;
-    productName: string;
-    styleId: string;
-  };
-  variant: {
-    variantId: string;
-    variantName: string;
-    variantValue: string;
-  };
-  currencyCode: string;
-  listingId: string;
+  id: string;
+  productId: string;
+  variantId: string;
+  price: string;
   status: string;
-  inventoryType: string;
   createdAt: string;
-  updatedAt: string;
-  authenticationDetails: any;
-  batch: {
-    batchId: string;
-    taskId: string;
-  };
-  initiatedShipments: any;
+  expiresAt: string;
+  amount?: string;
+  ask?: string;
+  order?: string;
+  product?: string;
+  // Adding additional properties to match expected type
+  size?: string;
+  listing_type?: string;
+  time_created?: string;
+  time_updated?: string;
+  time_expires?: string;
 }
 
-interface StockXListingsProps {
+export interface StockXListingsProps {
   listings: StockXListing[];
+  isLoading: boolean; // Add isLoading prop
   lastUpdated: string;
-  filterByVariantId?: string; // Added this prop to match what's being passed in VariantListingsDialog
+  filterByVariantId: string;
 }
 
-export function StockXListings({ listings, lastUpdated, filterByVariantId }: StockXListingsProps) {
-  const [selectedListing, setSelectedListing] = useState<StockXListing | null>(null);
-  
-  // Filter listings by variant if provided
+export const StockXListings = ({ listings, lastUpdated, filterByVariantId, isLoading }: StockXListingsProps) => {
   const filteredListings = filterByVariantId 
-    ? listings.filter(listing => listing.variant.variantId === filterByVariantId) 
+    ? listings.filter(listing => listing.variantId === filterByVariantId)
     : listings;
-  
-  // Get a status badge component based on status string
-  const getStatusBadge = (status: string) => {
-    return <Badge variant="outline" className={getStatusClass(status)}>{status}</Badge>;
-  };
-
-  // Convert listing to order format for detail view
-  const getOrderFromListing = (listing: StockXListing) => {
-    // This function transforms a listing into an order format
-    // In a real app, you might fetch the actual order from an API
-    return {
-      askId: listing.ask.askId,
-      listingId: listing.listingId,
-      amount: listing.amount,
-      currencyCode: listing.currencyCode,
-      createdAt: listing.createdAt,
-      updatedAt: listing.updatedAt,
-      variant: listing.variant,
-      product: listing.product,
-      status: listing.status,
-      inventoryType: listing.inventoryType
-    };
-  };
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">StockX Listings</CardTitle>
-        <CardDescription>
-          Showing {filteredListings.length} active listings on StockX
-        </CardDescription>
+        <CardTitle className="text-lg font-medium flex items-center justify-between">
+          <span>StockX Listings</span>
+          <Badge variant="outline" className="ml-2 text-xs">
+            Last updated: {lastUpdated || 'Never'}
+          </Badge>
+        </CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Size</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Listed</TableHead>
-              <TableHead>Expires</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredListings.map((listing) => (
-              <TableRow key={listing.listingId}>
-                <TableCell className="font-medium">US {listing.variant.variantValue}</TableCell>
-                <TableCell className="font-medium">{formatPrice(listing.amount)}</TableCell>
-                <TableCell>{getStatusBadge(listing.status)}</TableCell>
-                <TableCell>{formatTimeAgo(listing.createdAt)}</TableCell>
-                <TableCell>{formatTimeAgo(listing.ask.askExpiresAt)}</TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          className="h-8 w-8 p-0"
-                          onClick={() => setSelectedListing(listing)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="w-full max-w-3xl">
-                        {selectedListing && (
-                          <ListingOrderDetail
-                            order={getOrderFromListing(selectedListing)}
-                            platform="stockx"
-                            onClose={() => setSelectedListing(null)}
-                          />
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                    <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                      <DollarSign className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-8 w-8 p-0">
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+      <CardContent>
+        {isLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-full" />
+          </div>
+        ) : filteredListings.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Price</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead>Expires</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredListings.map((listing) => (
+                <TableRow key={listing.id}>
+                  <TableCell className="font-medium">{formatCurrency(parseFloat(listing.price))}</TableCell>
+                  <TableCell>
+                    <Badge variant={listing.status === 'active' ? 'default' : 'secondary'}>
+                      {listing.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{new Date(listing.createdAt).toLocaleDateString()}</TableCell>
+                  <TableCell>{new Date(listing.expiresAt).toLocaleDateString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center py-4 text-muted-foreground">
+            No StockX listings found
+          </div>
+        )}
       </CardContent>
-      <CardFooter className="bg-muted/50 p-2">
-        <div className="text-xs text-muted-foreground w-full text-center">
-          Last updated {formatTimeAgo(lastUpdated)}
-        </div>
-      </CardFooter>
     </Card>
   );
-}
+};
