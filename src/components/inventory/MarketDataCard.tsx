@@ -54,16 +54,16 @@ export function MarketDataCard({
   };
 
   return (
-    <Card className="p-4 relative animate-fade-in border-2 border-blue-100 shadow-md w-full">
-      <div className="flex items-center justify-between mb-4 bg-blue-50 -m-4 mb-2 px-4 py-2 border-b border-blue-100">
-        <h3 className="font-semibold text-blue-800">Market Data - Size {selectedSize}</h3>
+    <Card className="p-4 relative animate-fade-in border shadow-sm w-full">
+      <div className="flex items-center justify-between mb-4 border-b pb-2">
+        <h3 className="font-semibold">Market Data - Size {selectedSize}</h3>
         <div className="flex items-center gap-2">
-          {isLoading && <Loader2 className="animate-spin h-4 w-4 text-blue-600" />}
+          {isLoading && <Loader2 className="animate-spin h-4 w-4 text-muted-foreground" />}
           {onClose && (
             <Button 
               variant="ghost" 
               size="sm" 
-              className="h-8 w-8 p-0 rounded-full hover:bg-blue-200 text-blue-700"
+              className="h-8 w-8 p-0 rounded-full hover:bg-secondary/80"
               onClick={onClose}
             >
               <X size={16} />
@@ -73,9 +73,9 @@ export function MarketDataCard({
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-        <TabsList className="grid w-full grid-cols-2 bg-blue-50">
-          <TabsTrigger value="stockx" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800">StockX</TabsTrigger>
-          <TabsTrigger value="goat" className="data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800">GOAT</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="stockx">StockX</TabsTrigger>
+          <TabsTrigger value="goat">GOAT</TabsTrigger>
         </TabsList>
         
         <TabsContent value="stockx" className="space-y-4 mt-4">

@@ -1,10 +1,17 @@
 
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetClose
+} from "@/components/ui/sheet";
 import { Badge } from '@/components/ui/badge';
 import { Variant } from '@/components/inventory-drawer/types';
 import { useStockXMarketData, useGoatMarketData } from '@/hooks/use-market-data';
 import { MarketDataSheet } from './MarketDataSheet';
+import { X } from 'lucide-react';
 
 interface MarketDataDialogProps {
   open: boolean;
@@ -24,22 +31,27 @@ export function MarketDataDialog({
   if (!variant) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="w-full sm:max-w-md md:max-w-lg lg:max-w-3xl overflow-y-auto">
+        <SheetHeader className="flex flex-row items-center justify-between mb-6 border-b pb-4">
+          <SheetTitle className="flex items-center gap-2 text-xl">
             Market Data for Size {variant.size}
             <Badge variant="outline" className="ml-2">Last Updated: {new Date().toLocaleString()}</Badge>
-          </DialogTitle>
-        </DialogHeader>
+          </SheetTitle>
+          <SheetClose className="rounded-full hover:bg-secondary h-8 w-8 flex items-center justify-center">
+            <X className="h-4 w-4" />
+          </SheetClose>
+        </SheetHeader>
         
-        <MarketDataSheet 
-          stockXData={stockXData} 
-          goatData={goatData}
-          variant={variant}
-          isLoading={isLoadingStockX || isLoadingGoat}
-        />
-      </DialogContent>
-    </Dialog>
+        <div className="overflow-y-auto pr-4">
+          <MarketDataSheet 
+            stockXData={stockXData} 
+            goatData={goatData}
+            variant={variant}
+            isLoading={isLoadingStockX || isLoadingGoat}
+          />
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
