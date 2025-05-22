@@ -1,10 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from '@/components/ui/badge';
-import { MarketDataCard } from './MarketDataCard';
 import { Variant } from '@/components/inventory-drawer/types';
 import { useStockXMarketData, useGoatMarketData } from '@/hooks/use-market-data';
+import { MarketDataSheet } from './MarketDataSheet';
 
 interface MarketDataDialogProps {
   open: boolean;
@@ -33,14 +33,12 @@ export function MarketDataDialog({
           </DialogTitle>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-          <MarketDataCard 
-            stockXData={stockXData} 
-            goatData={goatData}
-            selectedSize={variant.size}
-            isLoading={isLoadingStockX || isLoadingGoat}
-          />
-        </div>
+        <MarketDataSheet 
+          stockXData={stockXData} 
+          goatData={goatData}
+          variant={variant}
+          isLoading={isLoadingStockX || isLoadingGoat}
+        />
       </DialogContent>
     </Dialog>
   );

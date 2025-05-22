@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { formatCurrency } from '@/lib/utils';
 
 interface StockXMarketData {
   productId: string;
@@ -44,16 +45,6 @@ export function MarketDataCard({
   onClose 
 }: MarketDataCardProps) {
   const [activeTab, setActiveTab] = useState('stockx');
-  
-  // Format price function
-  const formatPrice = (cents: string) => {
-    if (!cents || cents === "0") return '$0.00';
-    const dollars = parseInt(cents) / 100;
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(dollars);
-  };
 
   // Get GOAT market data for a specific size
   const getGoatMarketDataForSize = (size: string) => {
@@ -126,25 +117,25 @@ export function MarketDataCard({
                     <div className="border rounded-md p-3 bg-green-50 border-green-100">
                       <div className="text-sm text-green-700">Lowest Ask</div>
                       <div className="text-xl font-semibold text-green-800">
-                        {formatPrice(data.availability.lowest_listing_price_cents)}
+                        {formatCurrency(data.availability.lowest_listing_price_cents)}
                       </div>
                     </div>
                     <div className="border rounded-md p-3 bg-blue-50 border-blue-100">
                       <div className="text-sm text-blue-700">Highest Offer</div>
                       <div className="text-xl font-semibold text-blue-800">
-                        {formatPrice(data.availability.highest_offer_price_cents)}
+                        {formatCurrency(data.availability.highest_offer_price_cents)}
                       </div>
                     </div>
                     <div className="border rounded-md p-3 bg-purple-50 border-purple-100">
                       <div className="text-sm text-purple-700">Last Sold</div>
                       <div className="text-xl font-semibold text-purple-800">
-                        {formatPrice(data.availability.last_sold_listing_price_cents)}
+                        {formatCurrency(data.availability.last_sold_listing_price_cents)}
                       </div>
                     </div>
                     <div className="border rounded-md p-3 bg-orange-50 border-orange-100">
                       <div className="text-sm text-orange-700">Market Value</div>
                       <div className="text-xl font-semibold text-orange-800">
-                        {formatPrice(data.availability.global_indicator_price_cents)}
+                        {formatCurrency(data.availability.global_indicator_price_cents)}
                       </div>
                     </div>
                   </>
