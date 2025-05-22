@@ -15,10 +15,11 @@ interface VariantListingsDialogProps {
   styleId: string;
 }
 
-// Mock StockX listing data that matches the StockXListing interface
+// Mock StockX listing data that matches the updated StockXListing interface
 const mockStockXListings: StockXListing[] = [
   {
     amount: "150",
+    price: "150",
     ask: {
       askId: "ask123",
       askCreatedAt: new Date().toISOString(),
@@ -48,17 +49,21 @@ const mockStockXListings: StockXListing[] = [
       taskId: "task123",
     },
     initiatedShipments: null,
+    id: "list123",
+    variantId: "var123",
+    productId: "prod123",
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   }
 ];
 
-// Mock GOAT listing data that matches the GoatListing interface
+// Mock GOAT listing data that matches the updated GoatListing interface
 const mockGoatListings: GoatListing[] = [
   {
     id: "g123",
     catalog_id: "cat123",
     condition: "CONDITION_NEW",
     packaging_condition: "PACKAGING_CONDITION_GOOD_CONDITION",
-    size: 9,
+    size: "9",
     size_unit: "US",
     sku: "DD1391-100",
     consigned: false,
@@ -69,6 +74,11 @@ const mockGoatListings: GoatListing[] = [
     activated_at: new Date().toISOString(),
     defects: [],
     additional_defects: "",
+    packagingCondition: "GOOD",
+    productId: "prod123",
+    price: "150",
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   }
 ];
 

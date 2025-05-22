@@ -4,10 +4,12 @@ import { apiClient } from '@/utils/apiClient';
 import { StockXListing } from '../components/inventory/StockXListings';
 import { GoatListing } from '../components/inventory/GoatListings';
 
-// Sample listings data
+// Sample listings data with updated types
 const mockStockXListings: StockXListing[] = [
   {
+    id: "list123",
     amount: "150",
+    price: "150",
     ask: {
       askId: "ask123",
       askCreatedAt: new Date().toISOString(),
@@ -37,6 +39,9 @@ const mockStockXListings: StockXListing[] = [
       taskId: "task123",
     },
     initiatedShipments: null,
+    variantId: "var123",
+    productId: "prod123",
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   }
 ];
 
@@ -46,7 +51,7 @@ const mockGoatListings: GoatListing[] = [
     catalog_id: "cat123",
     condition: "CONDITION_NEW",
     packaging_condition: "PACKAGING_CONDITION_GOOD_CONDITION",
-    size: 9,
+    size: "9",
     size_unit: "US",
     sku: "DD1391-100",
     consigned: false,
@@ -57,6 +62,11 @@ const mockGoatListings: GoatListing[] = [
     activated_at: new Date().toISOString(),
     defects: [],
     additional_defects: "",
+    packagingCondition: "GOOD",
+    productId: "prod123",
+    price: "150",
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   }
 ];
 

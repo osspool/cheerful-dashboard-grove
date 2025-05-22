@@ -47,7 +47,8 @@ export function InventoryItemListings({ styleId, name }: InventoryItemListingsPr
         batchId: "52591f34-524e-42b1-a571-133ad0f6574e",
         taskId: "c34445fb-9730-4ce1-b7b6-20439351cc50"
       },
-      initiatedShipments: null
+      initiatedShipments: null,
+      price: "148.00"
     },
     {
       amount: "155",
@@ -89,7 +90,7 @@ export function InventoryItemListings({ styleId, name }: InventoryItemListingsPr
       catalog_id: "air-jordan-13-retro-wheat-2023-414571-171",
       condition: "CONDITION_NEW",
       packaging_condition: "PACKAGING_CONDITION_GOOD_CONDITION",
-      size: 9,
+      size: "9",
       size_unit: "SIZE_UNIT_US",
       sku: styleId,
       consigned: false,
@@ -106,7 +107,7 @@ export function InventoryItemListings({ styleId, name }: InventoryItemListingsPr
       catalog_id: "air-jordan-13-retro-wheat-2023-414571-171",
       condition: "CONDITION_NEW",
       packaging_condition: "PACKAGING_CONDITION_GOOD_CONDITION",
-      size: 10,
+      size: "10",
       size_unit: "SIZE_UNIT_US",
       sku: styleId,
       consigned: false,
@@ -150,11 +151,21 @@ export function InventoryItemListings({ styleId, name }: InventoryItemListingsPr
         </TabsList>
         
         <TabsContent value="stockx" className="mt-4">
-          <StockXListings listings={mockStockXListings} lastUpdated={lastUpdated} />
+          <StockXListings 
+            listings={mockStockXListings} 
+            lastUpdated={lastUpdated} 
+            isLoading={isLoading}
+            filterByVariantId=""
+          />
         </TabsContent>
         
         <TabsContent value="goat" className="mt-4">
-          <GoatListings listings={mockGoatListings} lastUpdated={lastUpdated} />
+          <GoatListings 
+            listings={mockGoatListings} 
+            lastUpdated={lastUpdated} 
+            isLoading={isLoading}
+            filterBySize=""
+          />
         </TabsContent>
       </Tabs>
     </div>
