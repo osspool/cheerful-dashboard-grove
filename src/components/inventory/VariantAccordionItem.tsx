@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   AccordionContent, 
@@ -9,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, LineChart, Eye, Tag, Truck } from 'lucide-react';
 import { InventoryQuantityControl } from './InventoryQuantityControl';
-import { Variant } from '@/components/inventory-drawer/types';
+import { Variant as InventoryVariant } from '@/components/inventory-drawer/types';
 
 interface SizeChart {
   defaultConversion: {
