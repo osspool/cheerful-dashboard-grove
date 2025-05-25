@@ -1,7 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/utils/apiClient';
-import { InventoryItem, Variant } from '@/components/inventory-drawer/types';
+import { InventoryItem } from '@/components/inventory-drawer/types';
 import { sampleInventoryItems } from '@/components/inventory/InventoryData';
 import { toast } from './use-toast';
 
@@ -58,21 +58,19 @@ export const useUpdateInventoryQuantity = () => {
   return useMutation({
     mutationFn: async ({ 
       itemId, 
-      variantId, 
       newQuantity 
     }: { 
       itemId: string; 
-      variantId: string; 
       newQuantity: number 
     }) => {
-      // Simulate API call to update quantity
-      const response = await apiClient.put(`/api/inventory/${itemId}/variant/${variantId}/quantity`, 
+      // Simulate API call to update quantity for this specific inventory item
+      const response = await apiClient.put(`/api/inventory/${itemId}/quantity`, 
         { quantity: newQuantity },
         { success: true }
       );
       return response.data;
     },
-    onMutate: async ({ itemId, variantId, newQuantity }) => {
+    onMutate: async ({ itemId, newQuantity }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: inventoryKeys.lists() });
       
@@ -85,14 +83,7 @@ export const useUpdateInventoryQuantity = () => {
         (old = []) => {
           return old.map(item => {
             if (item.id !== itemId) return item;
-            
-            return {
-              ...item,
-              variations: item.variations?.map(variant => {
-                if (variant.variantId !== variantId) return variant;
-                return { ...variant, quantity: newQuantity };
-              })
-            };
+            return { ...item, quantity: newQuantity };
           });
         }
       );
@@ -102,14 +93,7 @@ export const useUpdateInventoryQuantity = () => {
         inventoryKeys.detail(itemId),
         (old) => {
           if (!old) return old;
-          
-          return {
-            ...old,
-            variations: old.variations?.map(variant => {
-              if (variant.variantId !== variantId) return variant;
-              return { ...variant, quantity: newQuantity };
-            })
-          };
+          return { ...old, quantity: newQuantity };
         }
       );
       
@@ -126,10 +110,10 @@ export const useUpdateInventoryQuantity = () => {
         variant: "destructive",
       });
     },
-    onSuccess: (data, { variantId }) => {
+    onSuccess: (data, { itemId }) => {
       toast({
         title: "Quantity updated",
-        description: `Inventory quantity for variant ${variantId} has been updated successfully.`,
+        description: `Inventory quantity for item ${itemId} has been updated successfully.`,
       });
     },
     onSettled: (data, error, { itemId }) => {
