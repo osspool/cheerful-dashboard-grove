@@ -5,6 +5,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Trash2, Eye } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { InventoryItem } from '../inventory-drawer/types';
 
 interface InventoryTableRowProps {
@@ -29,11 +30,22 @@ export function InventoryTableRow({ item, onViewItem }: InventoryTableRowProps) 
       <TableCell>
         <div>
           <p className="font-medium">{item.name}</p>
-          <p className="text-xs text-muted-foreground mt-1">{item.styleId}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {item.styleId} • UPC: {item.upc}
+          </p>
+          {item.brand && (
+            <Badge variant="outline" className="mt-1 text-xs">
+              {item.brand}
+            </Badge>
+          )}
         </div>
       </TableCell>
-      <TableCell>{item.size}</TableCell>
-      <TableCell>{item.quantity}</TableCell>
+      <TableCell>
+        <Badge variant="secondary">{item.size}</Badge>
+      </TableCell>
+      <TableCell>
+        <span className="font-semibold">{item.quantity}</span>
+      </TableCell>
       <TableCell>{item.dateAdded}</TableCell>
       <TableCell>{item.warehouseLocation}</TableCell>
       <TableCell>${item.cost}</TableCell>

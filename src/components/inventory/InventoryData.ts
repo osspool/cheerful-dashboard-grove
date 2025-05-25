@@ -1,273 +1,111 @@
 
 import { InventoryItem } from '../inventory-drawer/types';
 
-// This file contains the sample inventory data, extracted to reduce the main component's size
+// Sample inventory data - each item represents one UPC with one variant
 export const sampleInventoryItems: InventoryItem[] = [
   {
-    id: '1',
-    image: 'https://images.stockx.com/images/Timberland-6-Inch-Premium-Waterproof-Boots-Wheat-Product.jpg',
-    name: 'Timberland 6" Boot Just Don Denim (GS)',
-    styleId: 'TB0NLKR/1184',
-    size: '5.5Y',
-    quantity: 10,
-    dateAdded: '01/01/2025',
-    warehouseLocation: 'Northeast',
-    cost: '95.00',
-    daysListed: 15,
-    spread: 25,
-    isLowestAsk: true,
-    isExpired: false,
-    brand: 'Timberland',
+    id: "inv_001",
+    upc: "123456789012",
+    name: "Air Jordan 1 Retro High OG 'Chicago'",
+    styleId: "555088-101", 
+    brand: "Jordan",
+    image: "/placeholder.svg",
+    size: "10",
+    quantity: 2,
+    dateAdded: "2024-01-15",
+    warehouseLocation: "A1-B2",
+    cost: "170",
+    retailPrice: 170,
+    productAttributes: {
+      color: "White/Black-Varsity Red",
+      gender: "Men",
+      category: "Basketball",
+      retailPrice: 170,
+      releaseDate: "2022-11-05",
+      season: null,
+      colorway: "Chicago",
+      _id: "attr_001"
+    },
     stockx: {
-      sku: 'TB0NLKR-1184',
-      productId: 'c5e32ce5-4828-4f49-a345-f83e97285b3d'
+      sku: "555088-101",
+      productId: "air-jordan-1-retro-high-og-chicago"
     },
     goat: {
-      sku: 'TB0NLKR1184',
-      size_unit: 'SIZE_UNIT_US',
-      catalogId: 'timberland-6-boot-just-don-denim-gs',
+      sku: "555088-101", 
+      catalogId: "12345",
+      name: "Air Jordan 1 Retro High OG Chicago"
     },
-    variations: [
-      {
-        _id: '68217c125032caddc99e584d',
-        variantId: 'aea02332-e8d8-4413-a5ae-b7b82ca6f522',
-        variantName: 'Timberland-6-Boot-Just-Don-Denim-GS:5.5Y',
-        variantValue: '5.5Y',
-        size: '5.5Y',
-        quantity: 3,
-        sizeChart: {
-          defaultConversion: {
-            size: '5.5Y',
-            type: 'us'
-          },
-          availableConversions: [
-            {
-              size: 'US 5.5Y',
-              type: 'us'
-            },
-            {
-              size: 'UK 5',
-              type: 'uk'
-            },
-            {
-              size: 'EU 38',
-              type: 'eu'
-            }
-          ]
-        }
-      },
-      {
-        _id: '68217c125032caddc99e584e',
-        variantId: 'aea02332-e8d8-4413-a5ae-b7b82ca6f523',
-        variantName: 'Timberland-6-Boot-Just-Don-Denim-GS:6Y',
-        variantValue: '6Y',
-        size: '6Y',
-        quantity: 2,
-        sizeChart: {
-          defaultConversion: {
-            size: '6Y',
-            type: 'us'
-          },
-          availableConversions: [
-            {
-              size: 'US 6Y',
-              type: 'us'
-            },
-            {
-              size: 'UK 5.5',
-              type: 'uk'
-            },
-            {
-              size: 'EU 38.5',
-              type: 'eu'
-            }
-          ]
-        }
-      },
-      {
-        _id: '68217c125032caddc99e584f',
-        variantId: 'aea02332-e8d8-4413-a5ae-b7b82ca6f524',
-        variantName: 'Timberland-6-Boot-Just-Don-Denim-GS:7Y',
-        variantValue: '7Y',
-        size: '7Y',
-        quantity: 5,
-        sizeChart: {
-          defaultConversion: {
-            size: '7Y',
-            type: 'us'
-          },
-          availableConversions: [
-            {
-              size: 'US 7Y',
-              type: 'us'
-            },
-            {
-              size: 'UK 6.5',
-              type: 'uk'
-            },
-            {
-              size: 'EU 39.5',
-              type: 'eu'
-            }
-          ]
-        }
-      }
-    ]
+    platformsAvailable: ['stockx', 'goat'],
+    inventoryAddedAt: "2024-01-15T10:30:00Z"
   },
   {
-    id: '2',
-    image: 'https://images.stockx.com/images/Timberland-6-Inch-Premium-Waterproof-Boots-Black-Nubuck-Product.jpg',
-    name: 'Timberland 6" Boot Black Nubuck Premium',
-    styleId: 'TB00073-009/TB00073-001/TB00073001-001/TB001',
-    size: '9.5',
-    quantity: 12,
-    dateAdded: '01/01/2025',
-    warehouseLocation: 'Midwest',
-    cost: '120.00',
-    daysListed: 5,
-    spread: 40,
-    isLowestAsk: false,
-    isExpired: false,
-    brand: 'Timberland',
+    id: "inv_002", 
+    upc: "123456789013",
+    name: "Air Jordan 1 Retro High OG 'Chicago'",
+    styleId: "555088-101",
+    brand: "Jordan", 
+    image: "/placeholder.svg",
+    size: "9.5",
+    quantity: 1,
+    dateAdded: "2024-01-16",
+    warehouseLocation: "A1-B3", 
+    cost: "170",
+    retailPrice: 170,
+    productAttributes: {
+      color: "White/Black-Varsity Red",
+      gender: "Men", 
+      category: "Basketball",
+      retailPrice: 170,
+      releaseDate: "2022-11-05",
+      season: null,
+      colorway: "Chicago",
+      _id: "attr_001"
+    },
     stockx: {
-      sku: 'TB00073-009',
-      productId: 'd4e32ce5-4828-4f49-a345-f83e97285b3d'
+      sku: "555088-101",
+      productId: "air-jordan-1-retro-high-og-chicago"
     },
     goat: {
-      sku: 'TB00073009',
-      size_unit: 'SIZE_UNIT_US',
-      catalogId: 'timberland-6-boot-black-nubuck-premium',
+      sku: "555088-101",
+      catalogId: "12345", 
+      name: "Air Jordan 1 Retro High OG Chicago"
     },
-    variations: [
-      {
-        _id: '68217c125032caddc99e5850',
-        variantId: 'aea02332-e8d8-4413-a5ae-b7b82ca6f525',
-        variantName: 'Timberland-6-Boot-Black-Nubuck:9',
-        variantValue: '9',
-        size: '9',
-        quantity: 4,
-        sizeChart: {
-          defaultConversion: {
-            size: '9',
-            type: 'us'
-          },
-          availableConversions: [
-            {
-              size: 'US 9',
-              type: 'us'
-            },
-            {
-              size: 'UK 8.5',
-              type: 'uk'
-            },
-            {
-              size: 'EU 43',
-              type: 'eu'
-            }
-          ]
-        }
-      },
-      {
-        _id: '68217c125032caddc99e5851',
-        variantId: 'aea02332-e8d8-4413-a5ae-b7b82ca6f526',
-        variantName: 'Timberland-6-Boot-Black-Nubuck:9.5',
-        variantValue: '9.5',
-        size: '9.5',
-        quantity: 3,
-        sizeChart: {
-          defaultConversion: {
-            size: '9.5',
-            type: 'us'
-          },
-          availableConversions: [
-            {
-              size: 'US 9.5',
-              type: 'us'
-            },
-            {
-              size: 'UK 9',
-              type: 'uk'
-            },
-            {
-              size: 'EU 43.5',
-              type: 'eu'
-            }
-          ]
-        }
-      },
-      {
-        _id: '68217c125032caddc99e5852',
-        variantId: 'aea02332-e8d8-4413-a5ae-b7b82ca6f527',
-        variantName: 'Timberland-6-Boot-Black-Nubuck:10',
-        variantValue: '10',
-        size: '10',
-        quantity: 5,
-        sizeChart: {
-          defaultConversion: {
-            size: '10',
-            type: 'us'
-          },
-          availableConversions: [
-            {
-              size: 'US 10',
-              type: 'us'
-            },
-            {
-              size: 'UK 9.5',
-              type: 'uk'
-            },
-            {
-              size: 'EU 44',
-              type: 'eu'
-            }
-          ]
-        }
-      }
-    ]
+    platformsAvailable: ['stockx', 'goat'],
+    inventoryAddedAt: "2024-01-16T14:20:00Z"
   },
   {
-    id: '3',
-    image: 'https://images.stockx.com/images/Timberland-6-Inch-Premium-Waterproof-Boots-Black-Nubuck-Product.jpg',
-    name: 'Timberland 6" Boot Black Nubuck Premium',
-    styleId: 'TB00073-009/TB00073-001/TB00073001-001/TB001',
-    size: '9.5',
-    quantity: 15,
-    dateAdded: '02/01/2025',
-    warehouseLocation: 'West',
-    cost: '120.00',
-    daysListed: 30,
-    spread: 10,
-    isLowestAsk: true,
-    isExpired: true
-  },
-  {
-    id: '4',
-    image: 'https://images.stockx.com/images/Timberland-6-Inch-Premium-Waterproof-Boots-Black-Nubuck-Product.jpg',
-    name: 'Timberland 6" Boot Black Nubuck Premium',
-    styleId: 'TB00073-009/TB00073-001/TB00073001-001/TB001',
-    size: '9.5',
-    quantity: 18,
-    dateAdded: '03/01/2025',
-    warehouseLocation: 'South',
-    cost: '120.00',
-    daysListed: 3,
-    spread: 50,
-    isLowestAsk: false,
-    isExpired: false
-  },
-  {
-    id: '5',
-    image: 'https://images.stockx.com/images/Nike-Air-Max-1-Dark-Stucco-Product.jpg',
-    name: 'Nike Air Max 1 SC Dark Stucco',
-    styleId: 'NK12345-001',
-    size: '8.5',
-    quantity: 8,
-    dateAdded: '03/15/2025',
-    warehouseLocation: 'Central',
-    cost: '$110.00',
-    daysListed: 20,
-    spread: 35,
-    isLowestAsk: true,
-    isExpired: true
+    id: "inv_003",
+    upc: "123456789014", 
+    name: "Nike Dunk Low 'Panda'",
+    styleId: "DD1391-100",
+    brand: "Nike",
+    image: "/placeholder.svg", 
+    size: "11",
+    quantity: 3,
+    dateAdded: "2024-01-20",
+    warehouseLocation: "B2-C1",
+    cost: "110", 
+    retailPrice: 110,
+    productAttributes: {
+      color: "White/Black",
+      gender: "Men",
+      category: "Lifestyle", 
+      retailPrice: 110,
+      releaseDate: "2021-03-10",
+      season: null,
+      colorway: "Panda", 
+      _id: "attr_002"
+    },
+    stockx: {
+      sku: "DD1391-100",
+      productId: "nike-dunk-low-panda"
+    },
+    goat: {
+      sku: "DD1391-100",
+      catalogId: "54321",
+      name: "Nike Dunk Low Panda"
+    },
+    platformsAvailable: ['stockx', 'goat'],
+    inventoryAddedAt: "2024-01-20T09:15:00Z"
   }
 ];

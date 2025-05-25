@@ -1,4 +1,3 @@
-
 export interface SizeChart {
   defaultConversion: {
     size: string;
@@ -8,16 +7,6 @@ export interface SizeChart {
     size: string;
     type: string;
   }>;
-}
-
-export interface Variant {
-  _id: string;
-  variantId: string;
-  variantName: string;
-  variantValue: string;
-  size: string;
-  sizeChart?: SizeChart;
-  quantity?: number;
 }
 
 export interface ProductAttributes {
@@ -33,14 +22,17 @@ export interface ProductAttributes {
 
 export interface InventoryItem {
   id: string;
-  image: string;
+  upc: string; // UPC is the unique identifier for each inventory item
   name: string;
   styleId: string;
-  size: string;
-  quantity: number;
+  brand?: string;
+  image: string;
+  size: string; // This inventory item's specific size
+  quantity: number; // Quantity for this specific UPC/size
   dateAdded: string;
   warehouseLocation: string;
   cost: string;
+  retailPrice?: number;
   daysListed?: number;
   spread?: number;
   isLowestAsk?: boolean;
@@ -56,7 +48,19 @@ export interface InventoryItem {
     name?: string;
   };
   _id?: string;
-  brand?: string;
   productAttributes?: ProductAttributes;
-  variations?: Variant[];
+  platformsAvailable?: string[];
+  inventoryAddedAt?: string;
+  // Remove variations since each inventory item is for one specific variant
+}
+
+// Keep Variant type for product catalog use
+export interface Variant {
+  _id: string;
+  variantId: string;
+  variantName: string;
+  variantValue: string;
+  size: string;
+  sizeChart?: SizeChart;
+  quantity?: number;
 }

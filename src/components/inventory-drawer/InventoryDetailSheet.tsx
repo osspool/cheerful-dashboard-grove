@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { InventoryItemSummary } from '../inventory/InventoryItemSummary';
 import { InventoryDetailTabs } from '../inventory/InventoryDetailTabs';
 import { ListingForm } from '../inventory/ListingForm';
-import { InventoryItem, Variant } from './types';
+import { InventoryItem } from './types';
 
 interface InventoryDetailSheetProps {
   open: boolean;
@@ -27,7 +27,6 @@ export function InventoryDetailSheet({ open, onOpenChange, item }: InventoryDeta
   const [activeTab, setActiveTab] = useState('details');
   const [selectedPlatform, setSelectedPlatform] = useState<'stockx' | 'goat' | null>(null);
   const [isListingFormOpen, setIsListingFormOpen] = useState(false);
-  const [selectedVariantForListing, setSelectedVariantForListing] = useState<string | null>(null);
   
   // Mock listing form state
   const [listingFormData, setListingFormData] = useState({
@@ -39,9 +38,8 @@ export function InventoryDetailSheet({ open, onOpenChange, item }: InventoryDeta
 
   if (!item) return null;
   
-  const handleListItem = (platform: 'stockx' | 'goat', variantId?: string) => {
+  const handleListItem = (platform: 'stockx' | 'goat') => {
     setSelectedPlatform(platform);
-    setSelectedVariantForListing(variantId || null);
     setIsListingFormOpen(true);
     
     // Reset form data
@@ -60,14 +58,6 @@ export function InventoryDetailSheet({ open, onOpenChange, item }: InventoryDeta
     });
     setIsListingFormOpen(false);
   };
-  
-  // Get selected variant data
-  const getSelectedVariantData = () => {
-    if (!selectedVariantForListing || !item.variations) return null;
-    return item.variations.find(variant => variant.variantId === selectedVariantForListing);
-  };
-
-  const selectedVariant = getSelectedVariantData();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -86,7 +76,7 @@ export function InventoryDetailSheet({ open, onOpenChange, item }: InventoryDeta
             <ListingForm 
               selectedPlatform={selectedPlatform}
               item={item}
-              selectedVariant={selectedVariant}
+              selectedVariant={null} // No variant selection needed since each item is one variant
               listingFormData={listingFormData}
               setListingFormData={setListingFormData}
               onBack={() => setIsListingFormOpen(false)}
