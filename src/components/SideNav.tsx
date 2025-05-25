@@ -9,11 +9,13 @@ import {
   ShoppingCart, 
   List, 
   ScanBarcode, 
+  PackagePlus,
   Tag, 
   Settings, 
   Star, 
   History,
-  LogOut
+  LogOut,
+  Boxes
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -43,7 +45,7 @@ export function SideNav() {
           <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
             <LayoutDashboard size={18} className="text-primary-foreground" />
           </div>
-          <h1 className="text-lg font-bold">Dashboard</h1>
+          <h1 className="text-lg font-bold">Inventory Hub</h1>
         </div>
       </div>
 
@@ -51,17 +53,27 @@ export function SideNav() {
         <div className="space-y-1">
           <NavItem icon={LayoutDashboard} label="Dashboard" to="/" isActive={path === "/"} />
           <NavItem icon={User} label="Profile" to="/profile" isActive={path === "/profile"} />
+        </div>
+
+        <div className="space-y-1">
+          <p className="px-3 text-xs uppercase text-muted-foreground font-medium mb-2">Inventory</p>
           <NavItem icon={Package} label="Inventory" to="/inventory" isActive={path === "/inventory"} />
-          <NavItem icon={ShoppingCart} label="Order" to="/order" isActive={path === "/order"} />
-          <NavItem icon={List} label="Listing" to="/listing" isActive={path === "/listing"} />
-          <NavItem icon={ScanBarcode} label="Scanner" to="/scanner" isActive={path === "/scanner"} />
-          <NavItem icon={Tag} label="Price Rule" to="/price-rule" isActive={path === "/price-rule"} />
+          <NavItem icon={Boxes} label="Products" to="/products" isActive={path.startsWith("/products")} />
+          <NavItem icon={ScanBarcode} label="Quick Scanner" to="/scanner" isActive={path === "/scanner"} />
+          <NavItem icon={PackagePlus} label="Bulk Add" to="/bulk-add" isActive={path === "/bulk-add"} />
+        </div>
+
+        <div className="space-y-1">
+          <p className="px-3 text-xs uppercase text-muted-foreground font-medium mb-2">Operations</p>
+          <NavItem icon={ShoppingCart} label="Orders" to="/order" isActive={path === "/order"} />
+          <NavItem icon={List} label="Listings" to="/listing" isActive={path === "/listing"} />
+          <NavItem icon={Tag} label="Price Rules" to="/price-rule" isActive={path === "/price-rule"} />
         </div>
 
         <div className="pt-4 space-y-1">
           <p className="px-3 text-xs uppercase text-muted-foreground font-medium mb-2">General</p>
           <NavItem icon={Settings} label="Settings" to="/settings" isActive={path === "/settings"} />
-          <NavItem icon={Star} label="Favorite" to="/favorite" isActive={path === "/favorite"} />
+          <NavItem icon={Star} label="Favorites" to="/favorite" isActive={path === "/favorite"} />
           <NavItem icon={History} label="History" to="/history" isActive={path === "/history"} />
         </div>
       </div>

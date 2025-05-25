@@ -7,7 +7,10 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Inventory from "./pages/Inventory";
 import Listing from "./pages/Listing";
-import Scanner from "./pages/Scanner";
+import QuickScanner from "./pages/QuickScanner";
+import BulkAdd from "./pages/BulkAdd";
+import Products from "./pages/Products";
+import ProductDetail from "./pages/ProductDetail";
 import { QueryProvider } from "./providers/QueryProvider";
 
 const App = () => {
@@ -21,9 +24,12 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/profile" element={<Index />} />
             <Route path="/inventory" element={<Inventory />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/order" element={<Index />} />
             <Route path="/listing" element={<Listing />} />
-            <Route path="/scanner" element={<Scanner />} />
+            <Route path="/scanner" element={<QuickScanner />} />
+            <Route path="/bulk-add" element={<BulkAdd />} />
             <Route path="/price-rule" element={<Index />} />
             <Route path="/settings" element={<Index />} />
             <Route path="/favorite" element={<Index />} />
