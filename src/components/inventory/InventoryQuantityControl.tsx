@@ -49,8 +49,8 @@ export function InventoryQuantityControl({
       onQuantityChange(variantId, newQuantity);
     }
     
-    // Use our new React Query mutation
-    updateQuantity.mutate({ itemId, variantId, newQuantity });
+    // Use our new React Query mutation - only pass itemId and newQuantity
+    updateQuantity.mutate({ itemId, newQuantity });
   };
 
   return (
