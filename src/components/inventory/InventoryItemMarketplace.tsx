@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { 
@@ -14,8 +14,10 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Package, ListOrdered, ChevronDown, Edit } from 'lucide-react';
+import { Package, ListOrdered, ChevronDown, Edit, ChevronLeft } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { ListingForm } from './ListingForm';
+import { useToast } from '@/hooks/use-toast';
 
 interface InventoryItemMarketplaceProps {
   item: any;
@@ -23,6 +25,16 @@ interface InventoryItemMarketplaceProps {
 }
 
 export function InventoryItemMarketplace({ item, handleListItem }: InventoryItemMarketplaceProps) {
+  const { toast } = useToast();
+  const [selectedPlatform, setSelectedPlatform] = useState<'stockx' | 'goat' | null>(null);
+  const [isListingFormOpen, setIsListingFormOpen] = useState(false);
+  const [listingFormData, setListingFormData] = useState({
+    price: '',
+    condition: 'CONDITION_NEW',
+    packagingCondition: 'PACKAGING_CONDITION_GOOD_CONDITION',
+    activate: true
+  });
+
   const formatTimeAgo = (dateString: string) => {
     try {
       return formatDistanceToNow(new Date(dateString), { addSuffix: true });
@@ -30,6 +42,61 @@ export function InventoryItemMarketplace({ item, handleListItem }: InventoryItem
       return 'Unknown date';
     }
   };
+
+  const handleCreateListing = (platform: 'stockx' | 'goat') => {
+    setSelectedPlatform(platform);
+    setIsListingFormOpen(true);
+    
+    // Reset form data
+    setListingFormData({
+      price: '',
+      condition: 'CONDITION_NEW',
+      packagingCondition: 'PACKAGING_CONDITION_GOOD_CONDITION',
+      activate: true
+    });
+  };
+
+  const handleSubmitListing = () => {
+    toast({
+      title: "Listing submitted",
+      description: `Successfully listed on ${selectedPlatform?.toUpperCase()} for $${listingFormData.price}`,
+    });
+    setIsListingFormOpen(false);
+    setSelectedPlatform(null);
+  };
+
+  const handleBackToMarketplace = () => {
+    setIsListingFormOpen(false);
+    setSelectedPlatform(null);
+  };
+
+  if (isListingFormOpen && selectedPlatform) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="mr-2"
+            onClick={handleBackToMarketplace}
+          >
+            <ChevronLeft size={16} className="mr-1" />
+            Back to Marketplace
+          </Button>
+        </div>
+        
+        <ListingForm 
+          selectedPlatform={selectedPlatform}
+          item={item}
+          selectedVariant={null}
+          listingFormData={listingFormData}
+          setListingFormData={setListingFormData}
+          onBack={handleBackToMarketplace}
+          onSubmit={handleSubmitListing}
+        />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -94,7 +161,7 @@ export function InventoryItemMarketplace({ item, handleListItem }: InventoryItem
           </CardContent>
           <CardFooter>
             <Button 
-              onClick={() => handleListItem('stockx')}
+              onClick={() => handleCreateListing('stockx')}
               className="w-full gap-1.5"
               disabled={!item.stockx?.sku}
               variant={item.stockx?.sku ? "default" : "outline"}
@@ -181,7 +248,7 @@ export function InventoryItemMarketplace({ item, handleListItem }: InventoryItem
           </CardContent>
           <CardFooter>
             <Button 
-              onClick={() => handleListItem('goat')}
+              onClick={() => handleCreateListing('goat')}
               className="w-full gap-1.5"
               disabled={!item.goat?.sku}
               variant={item.goat?.sku ? "default" : "outline"}
