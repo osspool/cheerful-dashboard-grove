@@ -4,7 +4,7 @@ import { SideNav } from '@/components/SideNav';
 import { Toaster } from "@/components/ui/toaster";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { Home, ScanBarcode } from 'lucide-react';
-import { QuickScannerContent } from '@/components/scanner/QuickScannerContent';
+import { ScannerContent } from '@/components/scanner/ScannerContent';
 
 const QuickScanner = () => {
   return (
@@ -24,13 +24,15 @@ const QuickScanner = () => {
               <BreadcrumbItem>
                 <BreadcrumbLink href="/scanner" className="flex items-center">
                   <ScanBarcode className="h-4 w-4 mr-1" />
-                  Quick Scanner
+                  Scanner
                 </BreadcrumbLink>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <QuickScannerContent />
+        <div className="flex-1 overflow-y-auto">
+          <ScannerContent />
+        </div>
       </div>
       <Toaster />
     </div>

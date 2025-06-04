@@ -2,12 +2,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { BatchItem } from './ScannerContent';
+import { Button } from '@/components/ui/button';
+import { ScanBarcode } from 'lucide-react';
+import { ScannedInventoryItem } from './ScannerContent';
 
 interface ScanningInterfaceProps {
   onBarcodeScan: (barcode: string) => void;
   lastScannedUpc: string | null;
-  lastScannedItem: BatchItem | null;
+  lastScannedItem: ScannedInventoryItem | null;
   isProcessing: boolean;
 }
 
@@ -19,6 +21,16 @@ export const ScanningInterface = ({
 }: ScanningInterfaceProps) => {
   const [barcode, setBarcode] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  
+  const getDisplaySize = (variant: any) => {
+    if (variant?.stockx?.variantValue) {
+      return variant.stockx.variantValue;
+    }
+    if (variant?.goat?.size) {
+      return `${variant.goat.size}${variant.goat.size_unit === 'SIZE_UNIT_US' ? ' US' : ''}`;
+    }
+    return 'N/A';
+  };
   
   // Handle barcode submission
   const handleSubmit = (e: React.FormEvent) => {
@@ -37,74 +49,82 @@ export const ScanningInterface = ({
   }, [isProcessing, lastScannedUpc]);
   
   return (
-    <div className="flex flex-col items-center space-y-8">
-      <Card className="w-full max-w-3xl">
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          {isProcessing ? (
-            <div className="flex flex-col items-center justify-center space-y-4">
-              <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
-              <h2 className="text-xl font-semibold">Processing...</h2>
-            </div>
-          ) : (
-            <>
-              <h2 className="text-3xl font-semibold mb-8">
-                {lastScannedItem ? 'Item Scanned' : 'Ready to Scan'}
+    <Card className="w-full">
+      <CardContent className="flex flex-col items-center justify-center py-12 space-y-6">
+        {isProcessing ? (
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+            <h2 className="text-xl font-semibold">Processing scan...</h2>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-3 mb-4">
+              <ScanBarcode className="h-8 w-8 text-primary" />
+              <h2 className="text-2xl font-semibold">
+                {lastScannedItem ? 'Item Found' : 'Ready to Scan'}
               </h2>
-              
-              {lastScannedItem ? (
-                <div className="text-center mb-6 space-y-1">
-                  <p className="text-2xl font-medium">
-                    {lastScannedItem.isNewProduct ? 'New/Unidentified Product' : lastScannedItem.productName}
+            </div>
+            
+            {lastScannedItem ? (
+              <div className="text-center space-y-3 mb-6">
+                <div className="space-y-1">
+                  <p className="text-xl font-medium">{lastScannedItem.product.title}</p>
+                  <p className="text-lg text-muted-foreground">
+                    {lastScannedItem.product.brand} • Size {getDisplaySize(lastScannedItem.variant)}
                   </p>
-                  
-                  {lastScannedItem.brand && !lastScannedItem.isNewProduct && (
-                    <p className="text-lg text-muted-foreground">
-                      {lastScannedItem.brand}
-                      {lastScannedItem.color && ` | ${lastScannedItem.color}`}
-                      {lastScannedItem.size && ` | Size ${lastScannedItem.size}`}
-                    </p>
-                  )}
-                  
-                  <p className="text-lg mt-2">
-                    UPC: <span className="font-mono">{lastScannedUpc}</span>
+                  <p className="text-sm text-muted-foreground">
+                    Style: {lastScannedItem.product.styleId} | UPC: {lastScannedUpc}
                   </p>
-                  
-                  <div className="mt-4 bg-primary/10 rounded-md px-3 py-2 inline-flex items-center">
-                    <span className="font-medium">Qty: +1</span>
-                    <span className="mx-2">|</span>
-                    <span className="font-medium">Total: {lastScannedItem.quantity}</span>
+                </div>
+                
+                <div className="flex items-center justify-center gap-6 mt-4">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Current Stock</p>
+                    <p className="text-lg font-semibold">{lastScannedItem.currentQuantity}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Scanned</p>
+                    <p className="text-lg font-semibold text-primary">+{lastScannedItem.scannedQuantity}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">Location</p>
+                    <p className="text-lg font-semibold">{lastScannedItem.location.join(', ')}</p>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center mb-8">
-                  <p className="text-xl text-muted-foreground">Scan a shoe barcode to begin</p>
-                </div>
-              )}
+              </div>
+            ) : (
+              <div className="text-center mb-8">
+                <p className="text-lg text-muted-foreground">Scan a barcode to begin inventory update</p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Try: <code className="bg-muted px-2 py-1 rounded">194954684154</code>
+                </p>
+              </div>
+            )}
 
-              <form onSubmit={handleSubmit} className="w-full max-w-md relative">
+            <form onSubmit={handleSubmit} className="w-full max-w-md">
+              <div className="flex gap-2">
                 <Input
                   ref={inputRef}
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
-                  placeholder="Barcode input (or type manually and press Enter)"
-                  className="pr-4 py-6 text-lg h-auto"
+                  placeholder="Scan or enter barcode..."
+                  className="text-lg h-12"
                   autoComplete="off"
                   autoFocus
                 />
-                {barcode && (
-                  <button 
-                    type="submit" 
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary"
-                  >
-                    Scan
-                  </button>
-                )}
-              </form>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                <Button 
+                  type="submit" 
+                  disabled={!barcode.trim()}
+                  className="h-12 px-6"
+                >
+                  Scan
+                </Button>
+              </div>
+            </form>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 };
