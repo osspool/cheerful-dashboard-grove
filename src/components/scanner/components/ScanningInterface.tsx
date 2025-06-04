@@ -1,9 +1,10 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScanBarcode } from 'lucide-react';
-import { ScannedInventoryItem } from './types';
+import { ScannedInventoryItem } from '../types';
 
 interface ScanningInterfaceProps {
   onBarcodeScan: (barcode: string) => void;
@@ -49,31 +50,31 @@ export const ScanningInterface = ({
   
   return (
     <Card className="w-full">
-      <CardContent className="flex flex-col items-center justify-center py-6 space-y-4">
+      <CardContent className="flex flex-col items-center justify-center py-4 space-y-3">
         {isProcessing ? (
-          <div className="flex flex-col items-center justify-center space-y-3">
-            <div className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
-            <h2 className="text-lg font-semibold">Processing scan...</h2>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <div className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+            <h2 className="text-base font-semibold">Processing scan...</h2>
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-3">
-              <ScanBarcode className="h-6 w-6 text-primary" />
-              <h2 className="text-xl font-semibold">
+            <div className="flex items-center gap-2">
+              <ScanBarcode className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">
                 {lastScannedItem ? 'Item Found' : 'Ready to Scan'}
               </h2>
             </div>
             
             {lastScannedItem ? (
-              <div className="text-center space-y-2 mb-4">
+              <div className="text-center space-y-2">
                 <div className="space-y-1">
-                  <p className="text-lg font-medium">{lastScannedItem.product.title}</p>
+                  <p className="text-base font-medium">{lastScannedItem.product.title}</p>
                   <p className="text-sm text-muted-foreground">
                     {lastScannedItem.product.brand} • Size {getDisplaySize(lastScannedItem.variant)} • {lastScannedItem.product.styleId}
                   </p>
                 </div>
                 
-                <div className="flex items-center justify-center gap-6 mt-3">
+                <div className="flex items-center justify-center gap-4 mt-2">
                   <div className="text-center">
                     <p className="text-xs text-muted-foreground">Current</p>
                     <p className="text-sm font-semibold">{lastScannedItem.currentQuantity}</p>
@@ -89,7 +90,7 @@ export const ScanningInterface = ({
                 </div>
               </div>
             ) : (
-              <div className="text-center mb-4">
+              <div className="text-center">
                 <p className="text-sm text-muted-foreground">Scan a barcode to begin inventory update</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Try: <code className="bg-muted px-2 py-1 rounded text-xs">194954684154</code>
@@ -105,14 +106,14 @@ export const ScanningInterface = ({
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
                   placeholder="Scan or enter barcode..."
-                  className="text-base h-10"
+                  className="text-base h-9"
                   autoComplete="off"
                   autoFocus
                 />
                 <Button 
                   type="submit" 
                   disabled={!barcode.trim()}
-                  className="h-10 px-4"
+                  className="h-9 px-4"
                 >
                   Scan
                 </Button>

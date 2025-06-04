@@ -1,49 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { ScanningInterface } from './ScanningInterface';
-import { ScannedItemsList } from './ScannedItemsList';
-import { ScannerControls } from './ScannerControls';
+
+import React from 'react';
 import { toast } from 'sonner';
 import { useScannerOperations } from '@/hooks/use-scanner-operations';
+import { useScannerState } from './hooks/useScannerState';
+import { ScanningInterface } from './components/ScanningInterface';
+import { ScannedItemsList } from './components/ScannedItemsList';
+import { ScannerControls } from './components/ScannerControls';
 import { ScannedInventoryItem } from './types';
+import { getDisplaySize, formatToastMessage } from './utils/scannerUtils';
 
 export const ScannerContent = () => {
-  const [scannedItems, setScannedItems] = useState<ScannedInventoryItem[]>([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [lastScannedUpc, setLastScannedUpc] = useState<string | null>(null);
-  const [operationMode, setOperationMode] = useState<'receiving' | 'shipping'>('receiving');
-  
+  const {
+    scannedItems,
+    setScannedItems,
+    isProcessing,
+    setIsProcessing,
+    lastScannedUpc,
+    setLastScannedUpc,
+    operationMode,
+    setOperationMode,
+    clearScannedItems
+  } = useScannerState();
+
   const { 
     scanBarcode, 
     updateInventoryQuantities,
     isLoading
   } = useScannerOperations();
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('scannedItems');
-    const savedMode = localStorage.getItem('operationMode');
-    
-    if (saved) {
-      try {
-        setScannedItems(JSON.parse(saved));
-      } catch (error) {
-        console.error('Failed to load saved items:', error);
-      }
-    }
-    
-    if (savedMode && (savedMode === 'receiving' || savedMode === 'shipping')) {
-      setOperationMode(savedMode);
-    }
-  }, []);
-
-  // Save to localStorage whenever scannedItems or operationMode changes
-  useEffect(() => {
-    localStorage.setItem('scannedItems', JSON.stringify(scannedItems));
-  }, [scannedItems]);
-
-  useEffect(() => {
-    localStorage.setItem('operationMode', operationMode);
-  }, [operationMode]);
 
   const handleBarcodeScan = async (upcCode: string) => {
     if (!upcCode || isProcessing) return;
@@ -86,7 +69,7 @@ export const ScannerContent = () => {
           }
         });
         
-        toast.success(`Item Scanned: ${inventory.product.title} - Size ${getDisplaySize(inventory.variant)} (${operationMode} mode)`);
+        toast.success(formatToastMessage(inventory, operationMode));
       } else {
         toast.error(`Item Not Found: No inventory found for UPC: ${upcCode}`);
       }
@@ -95,16 +78,6 @@ export const ScannerContent = () => {
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  const getDisplaySize = (variant: any) => {
-    if (variant.stockx?.variantValue) {
-      return variant.stockx.variantValue;
-    }
-    if (variant.goat?.size) {
-      return `${variant.goat.size}${variant.goat.size_unit === 'SIZE_UNIT_US' ? ' US' : ''}`;
-    }
-    return 'N/A';
   };
 
   const handleUpdateQuantity = (inventoryId: string, newQuantity: number) => {
@@ -140,21 +113,12 @@ export const ScannerContent = () => {
       const actionText = operation === 'increment' ? 'added to' : 'removed from';
       toast.success(`Inventory Updated: Successfully ${actionText} inventory for ${updates.length} items.`);
       
-      // Clear scanned items
-      setScannedItems([]);
-      setLastScannedUpc(null);
-      localStorage.removeItem('scannedItems');
+      clearScannedItems();
     } catch (error) {
       toast.error("Update Failed: Failed to update inventory quantities.");
     } finally {
       setIsProcessing(false);
     }
-  };
-
-  const handleClearAll = () => {
-    setScannedItems([]);
-    setLastScannedUpc(null);
-    localStorage.removeItem('scannedItems');
   };
 
   const lastScannedItem = lastScannedUpc ? 
@@ -186,7 +150,7 @@ export const ScannerContent = () => {
         
         <ScannerControls
           onSubmitUpdates={handleSubmitUpdates}
-          onClearAll={handleClearAll}
+          onClearAll={clearScannedItems}
           itemsCount={scannedItems.length}
           isProcessing={isProcessing}
           operationMode={operationMode}

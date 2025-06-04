@@ -47,18 +47,18 @@ export const ScannerControls = ({
             type="single"
             value={operationMode}
             onValueChange={(value) => value && onModeChange(value as 'receiving' | 'shipping')}
-            className="grid w-full max-w-sm grid-cols-2 bg-muted p-1 rounded-lg"
+            className="grid w-full max-w-md grid-cols-2 bg-muted/50 p-1 rounded-lg border"
           >
             <ToggleGroupItem
               value="receiving"
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium data-[state=on]:bg-background data-[state=on]:text-green-700 data-[state=on]:shadow-sm data-[state=off]:text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium data-[state=on]:bg-background data-[state=on]:text-green-700 data-[state=on]:shadow-sm data-[state=on]:border data-[state=off]:text-muted-foreground hover:text-foreground transition-all"
             >
               <Package className="h-4 w-4" />
               Receiving
             </ToggleGroupItem>
             <ToggleGroupItem
               value="shipping"
-              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium data-[state=on]:bg-background data-[state=on]:text-red-700 data-[state=on]:shadow-sm data-[state=off]:text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium data-[state=on]:bg-background data-[state=on]:text-red-700 data-[state=on]:shadow-sm data-[state=on]:border data-[state=off]:text-muted-foreground hover:text-foreground transition-all"
             >
               <Truck className="h-4 w-4" />
               Shipping
