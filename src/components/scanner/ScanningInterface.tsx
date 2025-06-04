@@ -1,10 +1,9 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScanBarcode } from 'lucide-react';
-import { ScannedInventoryItem } from './ScannerContent';
+import { ScannedInventoryItem } from './types';
 
 interface ScanningInterfaceProps {
   onBarcodeScan: (barcode: string) => void;

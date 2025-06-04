@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Table,
@@ -12,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Minus, Plus, Trash2, Package } from 'lucide-react';
-import { ScannedInventoryItem } from './ScannerContent';
+import { ScannedInventoryItem } from './types';
 
 interface ScannedItemsListProps {
   items: ScannedInventoryItem[];
