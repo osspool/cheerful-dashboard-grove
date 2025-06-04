@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { ScanningInterface } from './ScanningInterface';
 import { ScannedItemsList } from './ScannedItemsList';
 import { ScannerControls } from './ScannerControls';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { useScannerOperations } from '@/hooks/use-scanner-operations';
 import { ScannedInventoryItem } from './types';
 
@@ -87,23 +86,12 @@ export const ScannerContent = () => {
           }
         });
         
-        toast({
-          title: "Item Scanned",
-          description: `${inventory.product.title} - Size ${getDisplaySize(inventory.variant)} (${operationMode} mode)`,
-        });
+        toast.success(`Item Scanned: ${inventory.product.title} - Size ${getDisplaySize(inventory.variant)} (${operationMode} mode)`);
       } else {
-        toast({
-          title: "Item Not Found",
-          description: `No inventory found for UPC: ${upcCode}`,
-          variant: "destructive",
-        });
+        toast.error(`Item Not Found: No inventory found for UPC: ${upcCode}`);
       }
     } catch (error) {
-      toast({
-        title: "Scan Error",
-        description: "Failed to scan barcode. Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Scan Error: Failed to scan barcode. Please try again.");
     } finally {
       setIsProcessing(false);
     }
@@ -150,21 +138,14 @@ export const ScannerContent = () => {
       await updateInventoryQuantities({ updates, operation });
       
       const actionText = operation === 'increment' ? 'added to' : 'removed from';
-      toast({
-        title: "Inventory Updated",
-        description: `Successfully ${actionText} inventory for ${updates.length} items.`,
-      });
+      toast.success(`Inventory Updated: Successfully ${actionText} inventory for ${updates.length} items.`);
       
       // Clear scanned items
       setScannedItems([]);
       setLastScannedUpc(null);
       localStorage.removeItem('scannedItems');
     } catch (error) {
-      toast({
-        title: "Update Failed",
-        description: "Failed to update inventory quantities.",
-        variant: "destructive",
-      });
+      toast.error("Update Failed: Failed to update inventory quantities.");
     } finally {
       setIsProcessing(false);
     }

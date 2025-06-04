@@ -40,28 +40,28 @@ export const ScannerControls = ({
 
   return (
     <Card>
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="p-4 space-y-4">
         {/* Operation Mode Selector */}
         <div className="flex items-center justify-center">
           <ToggleGroup
             type="single"
             value={operationMode}
             onValueChange={(value) => value && onModeChange(value as 'receiving' | 'shipping')}
-            className="grid w-full max-w-md grid-cols-2"
+            className="grid w-full max-w-sm grid-cols-2 bg-muted p-1 rounded-lg"
           >
             <ToggleGroupItem
               value="receiving"
-              className="flex items-center gap-2 data-[state=on]:bg-green-100 data-[state=on]:text-green-800 data-[state=on]:border-green-300"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium data-[state=on]:bg-background data-[state=on]:text-green-700 data-[state=on]:shadow-sm data-[state=off]:text-muted-foreground hover:text-foreground"
             >
               <Package className="h-4 w-4" />
-              Receiving Items
+              Receiving
             </ToggleGroupItem>
             <ToggleGroupItem
               value="shipping"
-              className="flex items-center gap-2 data-[state=on]:bg-red-100 data-[state=on]:text-red-800 data-[state=on]:border-red-300"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium data-[state=on]:bg-background data-[state=on]:text-red-700 data-[state=on]:shadow-sm data-[state=off]:text-muted-foreground hover:text-foreground"
             >
               <Truck className="h-4 w-4" />
-              Shipping Items
+              Shipping
             </ToggleGroupItem>
           </ToggleGroup>
         </div>
@@ -69,7 +69,7 @@ export const ScannerControls = ({
         {/* Controls */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="text-lg font-medium">
+            <div className="text-sm font-medium">
               {itemsCount} {itemsCount === 1 ? 'item' : 'items'} ready for {operationMode}
             </div>
             {itemsCount > 0 && (
@@ -78,9 +78,9 @@ export const ScannerControls = ({
                 size="sm"
                 onClick={onClearAll}
                 disabled={isProcessing}
-                className="gap-2"
+                className="gap-2 h-8"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3 w-3" />
                 Clear All
               </Button>
             )}
@@ -89,7 +89,7 @@ export const ScannerControls = ({
           <Button
             onClick={handleSubmit}
             disabled={itemsCount === 0 || isProcessing}
-            className={`gap-2 px-6 ${
+            className={`gap-2 px-4 h-9 ${
               operationMode === 'receiving' 
                 ? 'bg-green-600 hover:bg-green-700' 
                 : 'bg-red-600 hover:bg-red-700'
