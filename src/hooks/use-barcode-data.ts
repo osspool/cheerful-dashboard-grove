@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
 import { apiClient, mockApiDelay } from '@/utils/apiClient';
-import { BatchItem } from '@/components/scanner/ScannerContent';
+import { BatchItem } from '@/components/scanner/types';
 
 // Mock product data
 const mockProducts = [

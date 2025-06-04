@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Table,
@@ -9,7 +8,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BatchItem } from './ScannerContent';
+import { BatchItem } from './types';
 
 interface BatchItemsListProps {
   items: BatchItem[];
