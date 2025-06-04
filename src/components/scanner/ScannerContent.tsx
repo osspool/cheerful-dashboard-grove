@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ScanningInterface } from './ScanningInterface';
 import { ScannedItemsList } from './ScannedItemsList';
@@ -5,30 +6,6 @@ import { ScannerControls } from './ScannerControls';
 import { toast } from '@/hooks/use-toast';
 import { useScannerOperations } from '@/hooks/use-scanner-operations';
 import { ScannedInventoryItem } from './types';
-
-export interface ScannedInventoryItem {
-  inventoryId: string;
-  upc: string;
-  product: {
-    title: string;
-    brand: string;
-    styleId: string;
-  };
-  variant: {
-    stockx?: {
-      variantValue: string;
-    };
-    goat?: {
-      size: number;
-      size_unit: string;
-    };
-  };
-  currentQuantity: number;
-  scannedQuantity: number;
-  location: string[];
-  retail_price: number;
-  platforms_available: string[];
-}
 
 export const ScannerContent = () => {
   const [scannedItems, setScannedItems] = useState<ScannedInventoryItem[]>([]);
