@@ -11,6 +11,7 @@ export const ScannerContent = () => {
   const [scannedItems, setScannedItems] = useState<ScannedInventoryItem[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastScannedUpc, setLastScannedUpc] = useState<string | null>(null);
+  const [operationMode, setOperationMode] = useState<'receiving' | 'shipping'>('receiving');
   
   const { 
     scanBarcode, 
@@ -21,6 +22,8 @@ export const ScannerContent = () => {
   // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('scannedItems');
+    const savedMode = localStorage.getItem('operationMode');
+    
     if (saved) {
       try {
         setScannedItems(JSON.parse(saved));
@@ -28,12 +31,20 @@ export const ScannerContent = () => {
         console.error('Failed to load saved items:', error);
       }
     }
+    
+    if (savedMode && (savedMode === 'receiving' || savedMode === 'shipping')) {
+      setOperationMode(savedMode);
+    }
   }, []);
 
-  // Save to localStorage whenever scannedItems changes
+  // Save to localStorage whenever scannedItems or operationMode changes
   useEffect(() => {
     localStorage.setItem('scannedItems', JSON.stringify(scannedItems));
   }, [scannedItems]);
+
+  useEffect(() => {
+    localStorage.setItem('operationMode', operationMode);
+  }, [operationMode]);
 
   const handleBarcodeScan = async (upcCode: string) => {
     if (!upcCode || isProcessing) return;
@@ -78,7 +89,7 @@ export const ScannerContent = () => {
         
         toast({
           title: "Item Scanned",
-          description: `${inventory.product.title} - Size ${getDisplaySize(inventory.variant)}`,
+          description: `${inventory.product.title} - Size ${getDisplaySize(inventory.variant)} (${operationMode} mode)`,
         });
       } else {
         toast({
@@ -138,9 +149,10 @@ export const ScannerContent = () => {
       
       await updateInventoryQuantities({ updates, operation });
       
+      const actionText = operation === 'increment' ? 'added to' : 'removed from';
       toast({
         title: "Inventory Updated",
-        description: `Successfully ${operation}ed quantities for ${updates.length} items.`,
+        description: `Successfully ${actionText} inventory for ${updates.length} items.`,
       });
       
       // Clear scanned items
@@ -172,7 +184,7 @@ export const ScannerContent = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Quick Scanner</h1>
         <div className="text-sm text-muted-foreground">
-          {scannedItems.length} item{scannedItems.length !== 1 ? 's' : ''} scanned
+          {scannedItems.length} item{scannedItems.length !== 1 ? 's' : ''} scanned • {operationMode} mode
         </div>
       </div>
       
@@ -196,6 +208,8 @@ export const ScannerContent = () => {
           onClearAll={handleClearAll}
           itemsCount={scannedItems.length}
           isProcessing={isProcessing}
+          operationMode={operationMode}
+          onModeChange={setOperationMode}
         />
       </div>
     </div>

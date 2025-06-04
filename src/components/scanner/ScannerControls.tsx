@@ -2,59 +2,101 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Minus, Trash2 } from 'lucide-react';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Plus, Minus, Trash2, Package, Truck } from 'lucide-react';
 
 interface ScannerControlsProps {
   onSubmitUpdates: (operation: 'increment' | 'decrement') => void;
   onClearAll: () => void;
   itemsCount: number;
   isProcessing: boolean;
+  operationMode: 'receiving' | 'shipping';
+  onModeChange: (mode: 'receiving' | 'shipping') => void;
 }
 
 export const ScannerControls = ({
   onSubmitUpdates,
   onClearAll,
   itemsCount,
-  isProcessing
+  isProcessing,
+  operationMode,
+  onModeChange
 }: ScannerControlsProps) => {
+  const handleSubmit = () => {
+    const operation = operationMode === 'receiving' ? 'increment' : 'decrement';
+    onSubmitUpdates(operation);
+  };
+
+  const getButtonText = () => {
+    if (isProcessing) return 'Processing...';
+    return operationMode === 'receiving' ? 'Add To Inventory' : 'Remove From Inventory';
+  };
+
+  const getButtonIcon = () => {
+    return operationMode === 'receiving' ? Plus : Minus;
+  };
+
+  const ButtonIcon = getButtonIcon();
+
   return (
     <Card>
-      <CardContent className="flex items-center justify-between p-6">
-        <div className="flex items-center gap-4">
-          <div className="text-lg font-medium">
-            {itemsCount} {itemsCount === 1 ? 'item' : 'items'} ready for update
-          </div>
-          {itemsCount > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onClearAll}
-              disabled={isProcessing}
-              className="gap-2"
+      <CardContent className="p-6 space-y-4">
+        {/* Operation Mode Selector */}
+        <div className="flex items-center justify-center">
+          <ToggleGroup
+            type="single"
+            value={operationMode}
+            onValueChange={(value) => value && onModeChange(value as 'receiving' | 'shipping')}
+            className="grid w-full max-w-md grid-cols-2"
+          >
+            <ToggleGroupItem
+              value="receiving"
+              className="flex items-center gap-2 data-[state=on]:bg-green-100 data-[state=on]:text-green-800 data-[state=on]:border-green-300"
             >
-              <Trash2 className="h-4 w-4" />
-              Clear All
-            </Button>
-          )}
+              <Package className="h-4 w-4" />
+              Receiving Items
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="shipping"
+              className="flex items-center gap-2 data-[state=on]:bg-red-100 data-[state=on]:text-red-800 data-[state=on]:border-red-300"
+            >
+              <Truck className="h-4 w-4" />
+              Shipping Items
+            </ToggleGroupItem>
+          </ToggleGroup>
         </div>
-        
-        <div className="flex gap-3">
+
+        {/* Controls */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="text-lg font-medium">
+              {itemsCount} {itemsCount === 1 ? 'item' : 'items'} ready for {operationMode}
+            </div>
+            {itemsCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClearAll}
+                disabled={isProcessing}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Clear All
+              </Button>
+            )}
+          </div>
+          
           <Button
-            variant="outline"
-            onClick={() => onSubmitUpdates('decrement')}
+            onClick={handleSubmit}
             disabled={itemsCount === 0 || isProcessing}
-            className="gap-2"
+            className={`gap-2 px-6 ${
+              operationMode === 'receiving' 
+                ? 'bg-green-600 hover:bg-green-700' 
+                : 'bg-red-600 hover:bg-red-700'
+            }`}
           >
-            <Minus className="h-4 w-4" />
-            {isProcessing ? 'Processing...' : 'Remove From Inventory'}
-          </Button>
-          <Button
-            onClick={() => onSubmitUpdates('increment')}
-            disabled={itemsCount === 0 || isProcessing}
-            className="gap-2 px-6"
-          >
-            <Plus className="h-4 w-4" />
-            {isProcessing ? 'Processing...' : 'Add To Inventory'}
+            <ButtonIcon className="h-4 w-4" />
+            {getButtonText()}
           </Button>
         </div>
       </CardContent>
