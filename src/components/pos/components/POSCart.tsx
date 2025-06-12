@@ -1,16 +1,19 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Trash2, ShoppingCart } from 'lucide-react';
 import { usePOS } from '../context/POSContext';
 import { POSCartItemCard } from './POSCartItemCard';
+import { POSCheckout } from './POSCheckout';
 import { formatCurrency } from '@/lib/utils';
 
 export const POSCart = () => {
   const { state, dispatch } = usePOS();
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const subtotal = state.cartItems.reduce((sum, item) => sum + item.sellingPrice, 0);
   const total = subtotal; // Add taxes, discounts later
@@ -23,9 +26,9 @@ export const POSCart = () => {
     dispatch({ type: 'CLEAR_CART' });
   };
 
-  const handleCheckout = () => {
-    // TODO: Implement checkout logic
-    console.log('Processing checkout...', state.cartItems);
+  const handleCheckoutComplete = () => {
+    dispatch({ type: 'CLEAR_CART' });
+    setIsCheckoutOpen(false);
   };
 
   return (
@@ -93,9 +96,24 @@ export const POSCart = () => {
             </div>
           </div>
           
-          <Button onClick={handleCheckout} className="w-full" size="lg">
-            Complete Sale
-          </Button>
+          <Sheet open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
+            <SheetTrigger asChild>
+              <Button className="w-full" size="lg">
+                Complete Sale
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-md">
+              <SheetHeader>
+                <SheetTitle>Checkout</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6">
+                <POSCheckout
+                  onComplete={handleCheckoutComplete}
+                  onCancel={() => setIsCheckoutOpen(false)}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       )}
     </div>
