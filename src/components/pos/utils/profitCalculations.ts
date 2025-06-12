@@ -1,5 +1,5 @@
 
-import { POSSale, POSCartItem, POSAdjustment } from '../types';
+import { POSSale, POSCartItem } from '../types';
 
 export interface ProfitMetrics {
   totalRevenue: number;
@@ -28,20 +28,23 @@ export const calculateSaleProfit = (sale: POSSale): SaleProfit => {
   const cost = sale.items.reduce((sum, item) => sum + item.costPrice, 0);
   const grossProfit = revenue - cost;
   
-  // Calculate adjustments impact
-  const adjustments = sale.adjustments?.reduce((sum, adj) => {
-    switch (adj.type) {
-      case 'refund':
-      case 'discount':
-        return sum - Math.abs(adj.amount); // Negative impact on profit
-      case 'return':
-        return sum - Math.abs(adj.amount); // Negative impact on profit
-      case 'price_adjustment':
-        return sum + adj.amount; // Can be positive or negative
-      default:
-        return sum;
-    }
-  }, 0) || 0;
+  // Calculate adjustments impact from all items
+  const adjustments = sale.items.reduce((sum, item) => {
+    const itemAdjustments = item.adjustments?.reduce((itemSum, adj) => {
+      switch (adj.type) {
+        case 'refund':
+        case 'discount':
+          return itemSum - Math.abs(adj.amount); // Negative impact on profit
+        case 'return':
+          return itemSum - Math.abs(adj.amount); // Negative impact on profit
+        case 'price_adjustment':
+          return itemSum + adj.amount; // Can be positive or negative
+        default:
+          return itemSum;
+      }
+    }, 0) || 0;
+    return sum + itemAdjustments;
+  }, 0);
   
   const netProfit = grossProfit + adjustments;
   const profitMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
@@ -90,7 +93,6 @@ export const getTopPerformingItems = (sales: POSSale[], limit: number = 5) => {
   }>();
   
   sales.forEach(sale => {
-    const saleProfit = calculateSaleProfit(sale);
     sale.items.forEach(item => {
       const key = item.inventoryItem.product.title;
       const existing = itemPerformance.get(key) || {

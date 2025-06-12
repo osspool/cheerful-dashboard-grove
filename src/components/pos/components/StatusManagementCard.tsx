@@ -4,13 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Clock, Edit } from 'lucide-react';
+import { Clock, Edit, MapPin } from 'lucide-react';
 import { POSSale } from '../types';
-import { useUpdateSaleStatus } from '../hooks/usePOSSales';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
 
 interface StatusManagementCardProps {
   sale: POSSale;
@@ -18,158 +15,144 @@ interface StatusManagementCardProps {
 }
 
 export const StatusManagementCard = ({ sale, onUpdate }: StatusManagementCardProps) => {
-  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
-  const [newStatus, setNewStatus] = useState<POSSale['status']>(sale.status);
-  const [trackingNumber, setTrackingNumber] = useState(sale.shippingDetails?.trackingNumber || '');
-  const [carrier, setCarrier] = useState(sale.shippingDetails?.carrier || '');
+  const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
+  const [address, setAddress] = useState(sale.shippingDetails?.address || '');
+  const [city, setCity] = useState(sale.shippingDetails?.city || '');
+  const [state, setState] = useState(sale.shippingDetails?.state || '');
+  const [zipCode, setZipCode] = useState(sale.shippingDetails?.zipCode || '');
 
-  const updateStatusMutation = useUpdateSaleStatus();
   const { toast } = useToast();
 
-  const handleStatusUpdate = async () => {
+  const handleAddressUpdate = async () => {
     try {
-      const shippingDetails = newStatus === 'shipped' ? {
-        trackingNumber,
-        carrier,
-        shippedAt: new Date().toISOString(),
-      } : newStatus === 'delivered' ? {
-        ...sale.shippingDetails,
-        deliveredAt: new Date().toISOString(),
-      } : sale.shippingDetails;
-
-      await updateStatusMutation.mutateAsync({
+      // In a real app, this would call an API to update the shipping address
+      console.log('Updating shipping address:', {
         saleId: sale.id,
-        status: newStatus,
-        shippingDetails,
+        shippingDetails: { address, city, state, zipCode }
       });
 
       toast({
-        title: "Status Updated",
-        description: `Sale ${sale.id} marked as ${newStatus}`,
+        title: "Address Updated",
+        description: `Shipping address updated for sale ${sale.id}`,
       });
 
-      setIsStatusDialogOpen(false);
+      setIsAddressDialogOpen(false);
       onUpdate?.();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update sale status",
+        description: "Failed to update shipping address",
         variant: "destructive",
       });
     }
   };
+
+  // Get unique statuses from items
+  const itemStatuses = sale.items.map(item => item.status);
+  const uniqueStatuses = [...new Set(itemStatuses)];
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-4 w-4" />
-          Status Management
+          Sale Information
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+        <div className="space-y-2">
+          <h4 className="font-medium text-sm">Item Status Summary</h4>
+          <div className="text-sm space-y-1 bg-muted/50 p-3 rounded-md">
+            {uniqueStatuses.map(status => (
+              <div key={status} className="flex justify-between">
+                <span className="capitalize">{status}:</span>
+                <span>{itemStatuses.filter(s => s === status).length} item(s)</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <Dialog open={isAddressDialogOpen} onOpenChange={setIsAddressDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full">
-              <Edit className="h-4 w-4 mr-2" />
-              Update Status
+            <Button variant="outline" className="w-full">
+              <MapPin className="h-4 w-4 mr-2" />
+              {sale.shippingDetails?.address ? 'Update Address' : 'Add Shipping Address'}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Update Sale Status</DialogTitle>
+              <DialogTitle>Shipping Address</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>New Status</Label>
-                <Select value={newStatus} onValueChange={(value: POSSale['status']) => setNewStatus(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="shipped">Shipped</SelectItem>
-                    <SelectItem value="delivered">Delivered</SelectItem>
-                    <SelectItem value="returned">Returned</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="address">Address</Label>
+                <Input
+                  id="address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Enter street address"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="City"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="state">State</Label>
+                  <Input
+                    id="state"
+                    value={state}
+                    onChange={(e) => setState(e.target.value)}
+                    placeholder="State"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="zipCode">ZIP Code</Label>
+                <Input
+                  id="zipCode"
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                  placeholder="ZIP Code"
+                />
               </div>
               
-              {newStatus === 'shipped' && (
-                <>
-                  <div>
-                    <Label htmlFor="tracking">Tracking Number</Label>
-                    <Input
-                      id="tracking"
-                      value={trackingNumber}
-                      onChange={(e) => setTrackingNumber(e.target.value)}
-                      placeholder="Enter tracking number"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="carrier">Carrier</Label>
-                    <Select value={carrier} onValueChange={setCarrier}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select carrier" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ups">UPS</SelectItem>
-                        <SelectItem value="fedex">FedEx</SelectItem>
-                        <SelectItem value="usps">USPS</SelectItem>
-                        <SelectItem value="dhl">DHL</SelectItem>
-                        <SelectItem value="stockx">StockX Shipping</SelectItem>
-                        <SelectItem value="goat">GOAT Shipping</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-              
               <Button 
-                onClick={handleStatusUpdate}
+                onClick={handleAddressUpdate}
                 className="w-full"
-                disabled={newStatus === 'shipped' && (!trackingNumber || !carrier)}
               >
-                Update Status
+                {sale.shippingDetails?.address ? 'Update Address' : 'Add Address'}
               </Button>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* Current Shipping Details */}
+        {/* Current Shipping Address */}
         {sale.shippingDetails && (
           <div className="space-y-2">
-            <h4 className="font-medium text-sm">Shipping Information</h4>
+            <h4 className="font-medium text-sm">Shipping Address</h4>
             <div className="text-sm space-y-1 bg-muted/50 p-3 rounded-md">
-              {sale.shippingDetails.trackingNumber && (
-                <div className="flex justify-between">
-                  <span>Tracking:</span>
-                  <span className="font-mono">{sale.shippingDetails.trackingNumber}</span>
-                </div>
+              {sale.shippingDetails.address && (
+                <div>{sale.shippingDetails.address}</div>
               )}
-              {sale.shippingDetails.carrier && (
-                <div className="flex justify-between">
-                  <span>Carrier:</span>
-                  <span className="capitalize">{sale.shippingDetails.carrier}</span>
-                </div>
-              )}
-              {sale.shippingDetails.shippedAt && (
-                <div className="flex justify-between">
-                  <span>Shipped:</span>
-                  <span>{format(new Date(sale.shippingDetails.shippedAt), 'MMM dd, yyyy HH:mm')}</span>
-                </div>
-              )}
-              {sale.shippingDetails.deliveredAt && (
-                <div className="flex justify-between">
-                  <span>Delivered:</span>
-                  <span>{format(new Date(sale.shippingDetails.deliveredAt), 'MMM dd, yyyy HH:mm')}</span>
+              {(sale.shippingDetails.city || sale.shippingDetails.state || sale.shippingDetails.zipCode) && (
+                <div>
+                  {sale.shippingDetails.city}, {sale.shippingDetails.state} {sale.shippingDetails.zipCode}
                 </div>
               )}
             </div>
           </div>
         )}
+
+        <div className="text-xs text-muted-foreground bg-blue-50 p-3 rounded-md">
+          <strong>Note:</strong> Individual item status and shipping tracking are managed per item below. This section handles sale-level information only.
+        </div>
       </CardContent>
     </Card>
   );

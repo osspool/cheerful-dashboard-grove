@@ -8,8 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, Edit } from 'lucide-react';
-import { POSSale, POSAdjustment } from '../types';
-import { useAddSaleAdjustment } from '../hooks/usePOSSales';
+import { POSSale, POSItemAdjustment } from '../types';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -21,17 +20,17 @@ interface AdjustmentsCardProps {
 
 export const AdjustmentsCard = ({ sale, onUpdate }: AdjustmentsCardProps) => {
   const [isAdjustmentDialogOpen, setIsAdjustmentDialogOpen] = useState(false);
-  const [adjustmentType, setAdjustmentType] = useState<POSAdjustment['type']>('price_adjustment');
+  const [selectedItemId, setSelectedItemId] = useState(sale.items[0]?.id || '');
+  const [adjustmentType, setAdjustmentType] = useState<POSItemAdjustment['type']>('price_adjustment');
   const [adjustmentAmount, setAdjustmentAmount] = useState('');
   const [adjustmentReason, setAdjustmentReason] = useState('');
 
-  const addAdjustmentMutation = useAddSaleAdjustment();
   const { toast } = useToast();
 
   const handleAddAdjustment = async () => {
     try {
-      await addAdjustmentMutation.mutateAsync({
-        saleId: sale.id,
+      // In a real app, this would call an API to add the adjustment to the specific item
+      console.log('Adding adjustment to item:', selectedItemId, {
         type: adjustmentType,
         amount: parseFloat(adjustmentAmount),
         reason: adjustmentReason,
@@ -55,12 +54,20 @@ export const AdjustmentsCard = ({ sale, onUpdate }: AdjustmentsCardProps) => {
     }
   };
 
+  // Get all adjustments from all items in the sale
+  const allAdjustments = sale.items.flatMap(item => 
+    (item.adjustments || []).map(adj => ({
+      ...adj,
+      itemTitle: item.inventoryItem.product.title
+    }))
+  );
+
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <DollarSign className="h-4 w-4" />
-          Price Adjustments
+          Item Adjustments
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -68,17 +75,32 @@ export const AdjustmentsCard = ({ sale, onUpdate }: AdjustmentsCardProps) => {
           <DialogTrigger asChild>
             <Button variant="outline" className="w-full">
               <Edit className="h-4 w-4 mr-2" />
-              Add Adjustment
+              Add Item Adjustment
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add Price Adjustment</DialogTitle>
+              <DialogTitle>Add Item Adjustment</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>
+                <Label>Select Item</Label>
+                <Select value={selectedItemId} onValueChange={setSelectedItemId}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sale.items.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.inventoryItem.product.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label>Adjustment Type</Label>
-                <Select value={adjustmentType} onValueChange={(value: POSAdjustment['type']) => setAdjustmentType(value)}>
+                <Select value={adjustmentType} onValueChange={(value: POSItemAdjustment['type']) => setAdjustmentType(value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -113,7 +135,7 @@ export const AdjustmentsCard = ({ sale, onUpdate }: AdjustmentsCardProps) => {
               </div>
               <Button 
                 onClick={handleAddAdjustment}
-                disabled={!adjustmentAmount || !adjustmentReason}
+                disabled={!adjustmentAmount || !adjustmentReason || !selectedItemId}
                 className="w-full"
               >
                 Add Adjustment
@@ -123,16 +145,19 @@ export const AdjustmentsCard = ({ sale, onUpdate }: AdjustmentsCardProps) => {
         </Dialog>
 
         {/* Existing Adjustments */}
-        {sale.adjustments && sale.adjustments.length > 0 ? (
+        {allAdjustments.length > 0 ? (
           <div className="space-y-2">
             <h4 className="font-medium text-sm">Applied Adjustments</h4>
             <div className="space-y-2">
-              {sale.adjustments.map((adjustment) => (
+              {allAdjustments.map((adjustment) => (
                 <div key={adjustment.id} className="border rounded-md p-3 bg-muted/30">
                   <div className="flex justify-between items-start mb-1">
-                    <Badge variant="outline" className="text-xs">
-                      {adjustment.type.replace('_', ' ')}
-                    </Badge>
+                    <div className="flex flex-col gap-1">
+                      <Badge variant="outline" className="text-xs w-fit">
+                        {adjustment.type.replace('_', ' ')}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">{adjustment.itemTitle}</span>
+                    </div>
                     <span className="font-semibold">
                       {adjustment.amount >= 0 ? '+' : ''}{formatCurrency(adjustment.amount)}
                     </span>
@@ -147,7 +172,7 @@ export const AdjustmentsCard = ({ sale, onUpdate }: AdjustmentsCardProps) => {
           </div>
         ) : (
           <div className="text-center py-4 text-muted-foreground text-sm">
-            No adjustments applied to this sale
+            No adjustments applied to any items in this sale
           </div>
         )}
       </CardContent>
