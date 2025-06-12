@@ -18,8 +18,8 @@ interface POSCartItemCardProps {
 export const POSCartItemCard = ({ item, index }: POSCartItemCardProps) => {
   const { dispatch } = usePOS();
   const [isEditing, setIsEditing] = useState(false);
-  const [sellingPrice, setSellingPrice] = useState(item.sellingPrice.toString());
-  const [costPrice, setCostPrice] = useState(item.costPrice.toString());
+  const [sellingPrice, setSellingPrice] = useState((item.sellingPrice || 0).toString());
+  const [costPrice, setCostPrice] = useState((item.costPrice || 0).toString());
   const [platform, setPlatform] = useState(item.platform);
 
   const handleRemove = () => {
@@ -32,8 +32,8 @@ export const POSCartItemCard = ({ item, index }: POSCartItemCardProps) => {
       payload: {
         id: item.inventoryItem.id,
         updates: {
-          sellingPrice: parseFloat(sellingPrice) || item.sellingPrice,
-          costPrice: parseFloat(costPrice) || item.costPrice,
+          sellingPrice: parseFloat(sellingPrice) || item.sellingPrice || 0,
+          costPrice: parseFloat(costPrice) || item.costPrice || 0,
           platform,
         },
       },
@@ -42,8 +42,8 @@ export const POSCartItemCard = ({ item, index }: POSCartItemCardProps) => {
   };
 
   const handleCancel = () => {
-    setSellingPrice(item.sellingPrice.toString());
-    setCostPrice(item.costPrice.toString());
+    setSellingPrice((item.sellingPrice || 0).toString());
+    setCostPrice((item.costPrice || 0).toString());
     setPlatform(item.platform);
     setIsEditing(false);
   };
@@ -65,7 +65,7 @@ export const POSCartItemCard = ({ item, index }: POSCartItemCardProps) => {
     return 'One Size';
   };
 
-  const profit = item.sellingPrice - item.costPrice;
+  const profit = (item.sellingPrice || 0) - (item.costPrice || 0);
 
   return (
     <Card className="border-l-4 border-l-primary/20">
@@ -150,11 +150,11 @@ export const POSCartItemCard = ({ item, index }: POSCartItemCardProps) => {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Selling:</span>
-              <span className="font-medium">{formatCurrency(item.sellingPrice)}</span>
+              <span className="font-medium">{formatCurrency(item.sellingPrice || 0)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Cost:</span>
-              <span>{formatCurrency(item.costPrice)}</span>
+              <span>{formatCurrency(item.costPrice || 0)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Profit:</span>

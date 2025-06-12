@@ -54,9 +54,9 @@ export const usePOSInventory = (searchQuery: string = '') => {
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         filteredItems = sampleInventoryItems.filter(item =>
-          item.title.toLowerCase().includes(query) ||
-          item.brand.toLowerCase().includes(query) ||
-          item.styleId.toLowerCase().includes(query)
+          item.title?.toLowerCase().includes(query) ||
+          item.brand?.toLowerCase().includes(query) ||
+          item.styleId?.toLowerCase().includes(query)
         );
       }
       
