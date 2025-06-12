@@ -53,11 +53,16 @@ export const usePOSInventory = (searchQuery: string = '') => {
       
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
-        filteredItems = sampleInventoryItems.filter(item =>
-          item.title?.toLowerCase().includes(query) ||
-          item.brand?.toLowerCase().includes(query) ||
-          item.styleId?.toLowerCase().includes(query)
-        );
+        filteredItems = sampleInventoryItems.filter(item => {
+          // Access properties safely from the sample data structure
+          const title = item.title || '';
+          const brand = item.brand || '';
+          const styleId = item.styleId || '';
+          
+          return title.toLowerCase().includes(query) ||
+                 brand.toLowerCase().includes(query) ||
+                 styleId.toLowerCase().includes(query);
+        });
       }
       
       const response = await apiClient.get('/api/pos/inventory', transformInventoryForPOS(filteredItems));
