@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,21 +8,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Truck, Package, Check, RotateCcw, DollarSign, Edit } from 'lucide-react';
+import { Truck, Package, Check, RotateCcw, DollarSign, Edit, Calendar, Clock } from 'lucide-react';
 import { POSSale, POSAdjustment } from '../types';
 import { useUpdateSaleStatus, useAddSaleAdjustment } from '../hooks/usePOSSales';
 import { formatCurrency } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 interface POSSaleManagementProps {
   sale: POSSale;
+  onUpdate?: () => void;
 }
 
-export const POSSaleManagement = ({ sale }: POSSaleManagementProps) => {
+export const POSSaleManagement = ({ sale, onUpdate }: POSSaleManagementProps) => {
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isAdjustmentDialogOpen, setIsAdjustmentDialogOpen] = useState(false);
-  const [trackingNumber, setTrackingNumber] = useState('');
-  const [carrier, setCarrier] = useState('');
+  const [newStatus, setNewStatus] = useState<POSSale['status']>(sale.status);
+  const [trackingNumber, setTrackingNumber] = useState(sale.shippingDetails?.trackingNumber || '');
+  const [carrier, setCarrier] = useState(sale.shippingDetails?.carrier || '');
   const [adjustmentType, setAdjustmentType] = useState<POSAdjustment['type']>('price_adjustment');
   const [adjustmentAmount, setAdjustmentAmount] = useState('');
   const [adjustmentReason, setAdjustmentReason] = useState('');
@@ -44,11 +46,7 @@ export const POSSaleManagement = ({ sale }: POSSaleManagementProps) => {
     }
   };
 
-  const canShip = sale.status === 'confirmed';
-  const canMarkDelivered = sale.status === 'shipped';
-  const canReturn = ['delivered', 'shipped'].includes(sale.status);
-
-  const handleStatusUpdate = async (newStatus: POSSale['status']) => {
+  const handleStatusUpdate = async () => {
     try {
       const shippingDetails = newStatus === 'shipped' ? {
         trackingNumber,
@@ -57,7 +55,7 @@ export const POSSaleManagement = ({ sale }: POSSaleManagementProps) => {
       } : newStatus === 'delivered' ? {
         ...sale.shippingDetails,
         deliveredAt: new Date().toISOString(),
-      } : undefined;
+      } : sale.shippingDetails;
 
       await updateStatusMutation.mutateAsync({
         saleId: sale.id,
@@ -71,8 +69,7 @@ export const POSSaleManagement = ({ sale }: POSSaleManagementProps) => {
       });
 
       setIsStatusDialogOpen(false);
-      setTrackingNumber('');
-      setCarrier('');
+      onUpdate?.();
     } catch (error) {
       toast({
         title: "Error",
@@ -99,6 +96,7 @@ export const POSSaleManagement = ({ sale }: POSSaleManagementProps) => {
       setIsAdjustmentDialogOpen(false);
       setAdjustmentAmount('');
       setAdjustmentReason('');
+      onUpdate?.();
     } catch (error) {
       toast({
         title: "Error",
@@ -109,94 +107,166 @@ export const POSSaleManagement = ({ sale }: POSSaleManagementProps) => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Sale Management</CardTitle>
-          <Badge className={getStatusColor(sale.status)}>
-            {sale.status.replace('_', ' ')}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Quick Actions */}
-        <div className="flex flex-wrap gap-2">
-          {canShip && (
-            <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="flex items-center gap-2">
-                  <Truck className="h-4 w-4" />
-                  Ship Order
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Ship Order</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="tracking">Tracking Number</Label>
-                    <Input
-                      id="tracking"
-                      value={trackingNumber}
-                      onChange={(e) => setTrackingNumber(e.target.value)}
-                      placeholder="Enter tracking number"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="carrier">Carrier</Label>
-                    <Select value={carrier} onValueChange={setCarrier}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select carrier" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="ups">UPS</SelectItem>
-                        <SelectItem value="fedex">FedEx</SelectItem>
-                        <SelectItem value="usps">USPS</SelectItem>
-                        <SelectItem value="dhl">DHL</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button 
-                    onClick={() => handleStatusUpdate('shipped')}
-                    disabled={!trackingNumber || !carrier}
-                    className="w-full"
-                  >
-                    Mark as Shipped
-                  </Button>
+    <div className="space-y-6">
+      {/* Sale Overview */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">Sale Overview</CardTitle>
+            <Badge className={getStatusColor(sale.status)}>
+              {sale.status.replace('_', ' ')}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-muted-foreground">Sale ID:</span>
+              <p className="font-mono">{sale.id}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Total:</span>
+              <p className="font-semibold">{formatCurrency(sale.total)}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Date:</span>
+              <p>{format(new Date(sale.createdAt), 'MMM dd, yyyy HH:mm')}</p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Payment:</span>
+              <p className="capitalize">{sale.paymentMethod || 'Not specified'}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Status Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Status Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="w-full">
+                <Edit className="h-4 w-4 mr-2" />
+                Update Status
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Update Sale Status</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>New Status</Label>
+                  <Select value={newStatus} onValueChange={(value: POSSale['status']) => setNewStatus(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="shipped">Shipped</SelectItem>
+                      <SelectItem value="delivered">Delivered</SelectItem>
+                      <SelectItem value="returned">Returned</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-              </DialogContent>
-            </Dialog>
-          )}
+                
+                {newStatus === 'shipped' && (
+                  <>
+                    <div>
+                      <Label htmlFor="tracking">Tracking Number</Label>
+                      <Input
+                        id="tracking"
+                        value={trackingNumber}
+                        onChange={(e) => setTrackingNumber(e.target.value)}
+                        placeholder="Enter tracking number"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="carrier">Carrier</Label>
+                      <Select value={carrier} onValueChange={setCarrier}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select carrier" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ups">UPS</SelectItem>
+                          <SelectItem value="fedex">FedEx</SelectItem>
+                          <SelectItem value="usps">USPS</SelectItem>
+                          <SelectItem value="dhl">DHL</SelectItem>
+                          <SelectItem value="stockx">StockX Shipping</SelectItem>
+                          <SelectItem value="goat">GOAT Shipping</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+                
+                <Button 
+                  onClick={handleStatusUpdate}
+                  className="w-full"
+                  disabled={newStatus === 'shipped' && (!trackingNumber || !carrier)}
+                >
+                  Update Status
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
-          {canMarkDelivered && (
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => handleStatusUpdate('delivered')}
-              className="flex items-center gap-2"
-            >
-              <Check className="h-4 w-4" />
-              Mark Delivered
-            </Button>
+          {/* Current Shipping Details */}
+          {sale.shippingDetails && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">Shipping Information</h4>
+              <div className="text-sm space-y-1 bg-muted/50 p-3 rounded-md">
+                {sale.shippingDetails.trackingNumber && (
+                  <div className="flex justify-between">
+                    <span>Tracking:</span>
+                    <span className="font-mono">{sale.shippingDetails.trackingNumber}</span>
+                  </div>
+                )}
+                {sale.shippingDetails.carrier && (
+                  <div className="flex justify-between">
+                    <span>Carrier:</span>
+                    <span className="capitalize">{sale.shippingDetails.carrier}</span>
+                  </div>
+                )}
+                {sale.shippingDetails.shippedAt && (
+                  <div className="flex justify-between">
+                    <span>Shipped:</span>
+                    <span>{format(new Date(sale.shippingDetails.shippedAt), 'MMM dd, yyyy HH:mm')}</span>
+                  </div>
+                )}
+                {sale.shippingDetails.deliveredAt && (
+                  <div className="flex justify-between">
+                    <span>Delivered:</span>
+                    <span>{format(new Date(sale.shippingDetails.deliveredAt), 'MMM dd, yyyy HH:mm')}</span>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
+        </CardContent>
+      </Card>
 
-          {canReturn && (
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => handleStatusUpdate('returned')}
-              className="flex items-center gap-2"
-            >
-              <RotateCcw className="h-4 w-4" />
-              Process Return
-            </Button>
-          )}
-
+      {/* Adjustments Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            Price Adjustments
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <Dialog open={isAdjustmentDialogOpen} onOpenChange={setIsAdjustmentDialogOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" variant="outline" className="flex items-center gap-2">
-                <Edit className="h-4 w-4" />
+              <Button variant="outline" className="w-full">
+                <Edit className="h-4 w-4 mr-2" />
                 Add Adjustment
               </Button>
             </DialogTrigger>
@@ -215,6 +285,7 @@ export const POSSaleManagement = ({ sale }: POSSaleManagementProps) => {
                       <SelectItem value="price_adjustment">Price Adjustment</SelectItem>
                       <SelectItem value="discount">Discount</SelectItem>
                       <SelectItem value="refund">Refund</SelectItem>
+                      <SelectItem value="return">Return</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -249,59 +320,49 @@ export const POSSaleManagement = ({ sale }: POSSaleManagementProps) => {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
 
-        {/* Shipping Details */}
-        {sale.shippingDetails && (
-          <div className="space-y-2">
-            <h4 className="font-medium">Shipping Details</h4>
-            <div className="text-sm space-y-1">
-              {sale.shippingDetails.trackingNumber && (
-                <div className="flex justify-between">
-                  <span>Tracking:</span>
-                  <span className="font-mono">{sale.shippingDetails.trackingNumber}</span>
-                </div>
-              )}
-              {sale.shippingDetails.carrier && (
-                <div className="flex justify-between">
-                  <span>Carrier:</span>
-                  <span>{sale.shippingDetails.carrier.toUpperCase()}</span>
-                </div>
-              )}
-              {sale.shippingDetails.shippedAt && (
-                <div className="flex justify-between">
-                  <span>Shipped:</span>
-                  <span>{new Date(sale.shippingDetails.shippedAt).toLocaleDateString()}</span>
-                </div>
-              )}
-              {sale.shippingDetails.deliveredAt && (
-                <div className="flex justify-between">
-                  <span>Delivered:</span>
-                  <span>{new Date(sale.shippingDetails.deliveredAt).toLocaleDateString()}</span>
-                </div>
-              )}
+          {/* Existing Adjustments */}
+          {sale.adjustments && sale.adjustments.length > 0 ? (
+            <div className="space-y-2">
+              <h4 className="font-medium text-sm">Applied Adjustments</h4>
+              <div className="space-y-2">
+                {sale.adjustments.map((adjustment) => (
+                  <div key={adjustment.id} className="border rounded-md p-3 bg-muted/30">
+                    <div className="flex justify-between items-start mb-1">
+                      <Badge variant="outline" className="text-xs">
+                        {adjustment.type.replace('_', ' ')}
+                      </Badge>
+                      <span className="font-semibold">
+                        {adjustment.amount >= 0 ? '+' : ''}{formatCurrency(adjustment.amount)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{adjustment.reason}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {format(new Date(adjustment.createdAt), 'MMM dd, yyyy HH:mm')}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-center py-4 text-muted-foreground text-sm">
+              No adjustments applied to this sale
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Adjustments */}
-        {sale.adjustments && sale.adjustments.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="font-medium">Adjustments</h4>
-            <div className="space-y-1">
-              {sale.adjustments.map((adjustment) => (
-                <div key={adjustment.id} className="flex justify-between text-sm">
-                  <span>{adjustment.type.replace('_', ' ')}:</span>
-                  <span className="flex items-center gap-2">
-                    {formatCurrency(adjustment.amount)}
-                    <span className="text-muted-foreground">({adjustment.reason})</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      {/* Customer Notes */}
+      {sale.customerNotes && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Customer Notes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm">{sale.customerNotes}</p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };

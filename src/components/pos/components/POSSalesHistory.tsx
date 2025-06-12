@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Calendar, Search, Receipt, RotateCcw, FileText, Eye, Truck, Package } from 'lucide-react';
 import { usePOSSales } from '../hooks/usePOSSales';
 import { POSSaleManagement } from './POSSaleManagement';
@@ -16,6 +16,7 @@ export const POSSalesHistory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSale, setSelectedSale] = useState<any>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { data: sales, isLoading } = usePOSSales();
 
   const filteredSales = sales?.filter(sale => {
@@ -159,6 +160,7 @@ export const POSSalesHistory = () => {
                 <TableHead>Items</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Adjustments</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -180,27 +182,39 @@ export const POSSalesHistory = () => {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="sm"
-                            onClick={() => setSelectedSale(sale)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle>Sale Details - {sale.id}</DialogTitle>
-                          </DialogHeader>
+                    {sale.adjustments && sale.adjustments.length > 0 ? (
+                      <Badge variant="outline" className="text-xs">
+                        {sale.adjustments.length} adj.
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                      <SheetTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setSelectedSale(sale)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </SheetTrigger>
+                      <SheetContent className="w-[400px] sm:w-[540px]">
+                        <SheetHeader>
+                          <SheetTitle>Sale Management - {selectedSale?.id}</SheetTitle>
+                        </SheetHeader>
+                        <div className="mt-6">
                           {selectedSale && (
-                            <POSSaleManagement sale={selectedSale} />
+                            <POSSaleManagement 
+                              sale={selectedSale} 
+                              onUpdate={() => setIsSheetOpen(false)}
+                            />
                           )}
-                        </DialogContent>
-                      </Dialog>
-                    </div>
+                        </div>
+                      </SheetContent>
+                    </Sheet>
                   </TableCell>
                 </TableRow>
               ))}
