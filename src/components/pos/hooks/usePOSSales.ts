@@ -3,23 +3,40 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/utils/apiClient';
 import { POSSale, POSAdjustment } from '../types';
 
-// Mock sales data
+// Mock sales data with better status handling
 const mockSales: POSSale[] = [
   {
     id: 'SALE-001',
     items: [],
     subtotal: 299.99,
     total: 299.99,
-    createdAt: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    status: 'completed',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    status: 'delivered',
+    paymentMethod: 'card',
+    shippingDetails: {
+      trackingNumber: 'TRK123456789',
+      carrier: 'UPS',
+      shippedAt: new Date(Date.now() - 43200000).toISOString(),
+      deliveredAt: new Date(Date.now() - 21600000).toISOString(),
+    },
   },
   {
     id: 'SALE-002',
     items: [],
     subtotal: 149.99,
     total: 149.99,
-    createdAt: new Date(Date.now() - 43200000).toISOString(), // 12 hours ago
-    status: 'completed',
+    createdAt: new Date(Date.now() - 43200000).toISOString(),
+    status: 'confirmed',
+    paymentMethod: 'cash',
+  },
+  {
+    id: 'SALE-003',
+    items: [],
+    subtotal: 89.99,
+    total: 89.99,
+    createdAt: new Date(Date.now() - 21600000).toISOString(),
+    status: 'pending',
+    paymentMethod: 'card',
   },
 ];
 
@@ -27,7 +44,6 @@ export const usePOSSales = (dateRange?: { from: Date; to: Date }) => {
   return useQuery({
     queryKey: ['pos-sales', dateRange],
     queryFn: async () => {
-      // Filter by date range if provided
       let filteredSales = mockSales;
       
       if (dateRange) {
@@ -37,11 +53,9 @@ export const usePOSSales = (dateRange?: { from: Date; to: Date }) => {
         });
       }
       
-      // For now, return the filtered mock data directly
-      // TODO: Replace with actual API call when backend is ready
       return filteredSales;
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
 };
 
@@ -51,13 +65,10 @@ export const usePOSSaleById = (saleId: string) => {
     queryFn: async () => {
       const sale = mockSales.find(s => s.id === saleId);
       if (!sale) throw new Error('Sale not found');
-      
-      // For now, return the mock data directly
-      // TODO: Replace with actual API call when backend is ready
       return sale;
     },
     enabled: !!saleId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 };
 
@@ -70,12 +81,73 @@ export const useCreateSale = () => {
         ...saleData,
         id: `SALE-${Date.now()}`,
         createdAt: new Date().toISOString(),
+        status: 'pending', // Always start as pending
       };
       
-      // For now, just return the new sale
-      // TODO: Replace with actual API call when backend is ready
       console.log('Creating sale:', newSale);
       return newSale;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pos-sales'] });
+    },
+  });
+};
+
+export const useUpdateSaleStatus = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      saleId, 
+      status, 
+      shippingDetails 
+    }: {
+      saleId: string;
+      status: POSSale['status'];
+      shippingDetails?: POSSale['shippingDetails'];
+    }) => {
+      const updatedSale = {
+        saleId,
+        status,
+        shippingDetails,
+        updatedAt: new Date().toISOString(),
+      };
+      
+      console.log('Updating sale status:', updatedSale);
+      return updatedSale;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pos-sales'] });
+    },
+  });
+};
+
+export const useAddSaleAdjustment = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({
+      saleId,
+      type,
+      amount,
+      reason,
+    }: {
+      saleId: string;
+      type: POSAdjustment['type'];
+      amount: number;
+      reason: string;
+    }) => {
+      const adjustment: POSAdjustment = {
+        id: `ADJ-${Date.now()}`,
+        saleId,
+        type,
+        amount,
+        reason,
+        createdAt: new Date().toISOString(),
+      };
+      
+      console.log('Adding sale adjustment:', adjustment);
+      return adjustment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pos-sales'] });
@@ -96,13 +168,11 @@ export const useProcessReturn = () => {
         id: `ADJ-${Date.now()}`,
         saleId,
         type: 'return',
-        amount: 0, // Calculate based on items
+        amount: 0,
         reason,
         createdAt: new Date().toISOString(),
       };
       
-      // For now, just return the adjustment
-      // TODO: Replace with actual API call when backend is ready
       console.log('Processing return:', adjustment);
       return adjustment;
     },

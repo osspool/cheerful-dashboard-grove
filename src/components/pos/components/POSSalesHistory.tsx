@@ -5,15 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Search, Receipt, RotateCcw, FileText } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Calendar, Search, Receipt, RotateCcw, FileText, Eye, Truck, Package } from 'lucide-react';
 import { usePOSSales } from '../hooks/usePOSSales';
+import { POSSaleManagement } from './POSSaleManagement';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
 
 export const POSSalesHistory = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [selectedSale, setSelectedSale] = useState<any>(null);
   const { data: sales, isLoading } = usePOSSales();
 
   const filteredSales = sales?.filter(sale => {
@@ -24,16 +26,33 @@ export const POSSalesHistory = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
       case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'confirmed': return 'bg-blue-100 text-blue-800';
+      case 'shipped': return 'bg-purple-100 text-purple-800';
+      case 'delivered': return 'bg-green-100 text-green-800';
       case 'returned': return 'bg-red-100 text-red-800';
-      case 'partially_returned': return 'bg-orange-100 text-orange-800';
+      case 'cancelled': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'shipped': return <Truck className="h-3 w-3" />;
+      case 'delivered': return <Package className="h-3 w-3" />;
+      case 'returned': return <RotateCcw className="h-3 w-3" />;
+      default: return null;
     }
   };
 
   const totalSales = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
   const avgSale = filteredSales.length > 0 ? totalSales / filteredSales.length : 0;
+
+  // Status summary
+  const statusCounts = filteredSales.reduce((acc, sale) => {
+    acc[sale.status] = (acc[sale.status] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   if (isLoading) {
     return (
@@ -47,7 +66,7 @@ export const POSSalesHistory = () => {
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -77,9 +96,36 @@ export const POSSalesHistory = () => {
             <p className="text-2xl font-bold">{formatCurrency(avgSale)}</p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <Truck className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Pending Ship</span>
+            </div>
+            <p className="text-2xl font-bold">{statusCounts.confirmed || 0}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Filters */}
+      {/* Status Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Status Overview</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(statusCounts).map(([status, count]) => (
+              <Badge key={status} className={getStatusColor(status)}>
+                {getStatusIcon(status)}
+                {status.replace('_', ' ')}: {count}
+              </Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Filters and Sales Table */}
       <Card>
         <CardHeader>
           <CardTitle>Sales History</CardTitle>
@@ -105,7 +151,6 @@ export const POSSalesHistory = () => {
             />
           </div>
 
-          {/* Sales Table */}
           <Table>
             <TableHeader>
               <TableRow>
@@ -130,19 +175,31 @@ export const POSSalesHistory = () => {
                   </TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(sale.status)}>
+                      {getStatusIcon(sale.status)}
                       {sale.status.replace('_', ' ')}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Receipt className="h-4 w-4" />
-                      </Button>
-                      {sale.status === 'completed' && (
-                        <Button variant="ghost" size="sm">
-                          <RotateCcw className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setSelectedSale(sale)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl">
+                          <DialogHeader>
+                            <DialogTitle>Sale Details - {sale.id}</DialogTitle>
+                          </DialogHeader>
+                          {selectedSale && (
+                            <POSSaleManagement sale={selectedSale} />
+                          )}
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </TableCell>
                 </TableRow>

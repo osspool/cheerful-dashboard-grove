@@ -63,15 +63,25 @@ export interface POSSale {
   subtotal: number;
   total: number;
   createdAt: string;
-  status: 'completed' | 'pending' | 'returned' | 'partially_returned';
+  updatedAt?: string;
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'returned' | 'cancelled';
+  paymentMethod?: 'cash' | 'card' | 'mixed';
+  customerNotes?: string;
   adjustments?: POSAdjustment[];
+  shippingDetails?: {
+    trackingNumber?: string;
+    carrier?: string;
+    shippedAt?: string;
+    deliveredAt?: string;
+  };
 }
 
 export interface POSAdjustment {
   id: string;
   saleId: string;
-  type: 'refund' | 'discount' | 'return';
+  type: 'refund' | 'discount' | 'return' | 'price_adjustment';
   amount: number;
   reason: string;
   createdAt: string;
+  createdBy?: string;
 }
