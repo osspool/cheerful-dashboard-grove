@@ -48,6 +48,10 @@ export const POSCartItemCard = ({ item, index }: POSCartItemCardProps) => {
     setIsEditing(false);
   };
 
+  const handlePlatformChange = (value: string) => {
+    setPlatform(value as 'stockx' | 'goat' | 'external');
+  };
+
   const getDisplaySize = (variant: any) => {
     if (variant?.stockx?.variantValue) {
       return variant.stockx.variantValue;
@@ -121,7 +125,7 @@ export const POSCartItemCard = ({ item, index }: POSCartItemCardProps) => {
             
             <div>
               <Label className="text-xs">Platform</Label>
-              <Select value={platform} onValueChange={setPlatform}>
+              <Select value={platform} onValueChange={handlePlatformChange}>
                 <SelectTrigger className="h-8">
                   <SelectValue />
                 </SelectTrigger>
