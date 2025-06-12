@@ -15,7 +15,8 @@ import {
   Star, 
   History,
   LogOut,
-  Boxes
+  Boxes,
+  CreditCard
 } from 'lucide-react';
 
 interface NavItemProps {
@@ -64,7 +65,8 @@ export function SideNav() {
         </div>
 
         <div className="space-y-1">
-          <p className="px-3 text-xs uppercase text-muted-foreground font-medium mb-2">Operations</p>
+          <p className="px-3 text-xs uppercase text-muted-foreground font-medium mb-2">Sales</p>
+          <NavItem icon={CreditCard} label="Point of Sale" to="/pos" isActive={path === "/pos"} />
           <NavItem icon={ShoppingCart} label="Orders" to="/order" isActive={path === "/order"} />
           <NavItem icon={List} label="Listings" to="/listing" isActive={path === "/listing"} />
           <NavItem icon={Tag} label="Price Rules" to="/price-rule" isActive={path === "/price-rule"} />
