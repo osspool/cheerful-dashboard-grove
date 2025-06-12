@@ -22,14 +22,19 @@ const initialState: POSState = {
   selectedPlatform: 'external',
 };
 
+const generateCartItemId = () => `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
 const posReducer = (state: POSState, action: POSAction): POSState => {
   switch (action.type) {
     case 'ADD_TO_CART':
       const newItem: POSCartItem = {
+        id: generateCartItemId(),
         inventoryItem: action.payload.inventoryItem,
         sellingPrice: action.payload.inventoryItem.retail_price,
         costPrice: action.payload.inventoryItem.wholesale_price || action.payload.inventoryItem.retail_price * 0.7,
         platform: action.payload.platform,
+        status: 'pending',
+        adjustments: [],
       };
       return {
         ...state,
@@ -39,14 +44,14 @@ const posReducer = (state: POSState, action: POSAction): POSState => {
     case 'REMOVE_FROM_CART':
       return {
         ...state,
-        cartItems: state.cartItems.filter(item => item.inventoryItem.id !== action.payload),
+        cartItems: state.cartItems.filter(item => item.id !== action.payload),
       };
     
     case 'UPDATE_CART_ITEM':
       return {
         ...state,
         cartItems: state.cartItems.map(item =>
-          item.inventoryItem.id === action.payload.id
+          item.id === action.payload.id
             ? { ...item, ...action.payload.updates }
             : item
         ),

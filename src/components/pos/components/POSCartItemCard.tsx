@@ -23,14 +23,14 @@ export const POSCartItemCard = ({ item, index }: POSCartItemCardProps) => {
   const [platform, setPlatform] = useState(item.platform);
 
   const handleRemove = () => {
-    dispatch({ type: 'REMOVE_FROM_CART', payload: item.inventoryItem.id });
+    dispatch({ type: 'REMOVE_FROM_CART', payload: item.id });
   };
 
   const handleSave = () => {
     dispatch({
       type: 'UPDATE_CART_ITEM',
       payload: {
-        id: item.inventoryItem.id,
+        id: item.id,
         updates: {
           sellingPrice: parseFloat(sellingPrice) || item.sellingPrice || 0,
           costPrice: parseFloat(costPrice) || item.costPrice || 0,

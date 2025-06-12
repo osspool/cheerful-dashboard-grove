@@ -50,11 +50,20 @@ export interface POSInventoryItem {
 }
 
 export interface POSCartItem {
+  id: string; // Unique ID for this cart item instance
   inventoryItem: POSInventoryItem;
   sellingPrice: number;
   costPrice: number;
   platform: 'stockx' | 'goat' | 'external';
   notes?: string;
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'returned' | 'cancelled';
+  shippingDetails?: {
+    trackingNumber?: string;
+    carrier?: string;
+    shippedAt?: string;
+    deliveredAt?: string;
+  };
+  adjustments?: POSItemAdjustment[];
 }
 
 export interface POSSale {
@@ -64,18 +73,29 @@ export interface POSSale {
   total: number;
   createdAt: string;
   updatedAt?: string;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'returned' | 'cancelled';
+  status: 'pending' | 'partial' | 'completed' | 'cancelled'; // Derived from item statuses
   paymentMethod?: 'cash' | 'card' | 'mixed';
   customerNotes?: string;
-  adjustments?: POSAdjustment[];
   shippingDetails?: {
-    trackingNumber?: string;
-    carrier?: string;
-    shippedAt?: string;
-    deliveredAt?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
   };
 }
 
+export interface POSItemAdjustment {
+  id: string;
+  saleId: string;
+  itemId: string; // References POSCartItem.id
+  type: 'refund' | 'discount' | 'return' | 'price_adjustment';
+  amount: number;
+  reason: string;
+  createdAt: string;
+  createdBy?: string;
+}
+
+// Legacy adjustment type for backward compatibility
 export interface POSAdjustment {
   id: string;
   saleId: string;
