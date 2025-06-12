@@ -54,10 +54,10 @@ export const usePOSInventory = (searchQuery: string = '') => {
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase();
         filteredItems = sampleInventoryItems.filter(item => {
-          // Access properties safely - using string conversion to handle any type
-          const title = String(item.title || '');
-          const brand = String(item.brand || '');
-          const styleId = String(item.styleId || '');
+          // Access properties safely based on the actual data structure
+          const title = String((item as any).title || '');
+          const brand = String((item as any).brand || '');
+          const styleId = String((item as any).styleId || '');
           
           return title.toLowerCase().includes(query) ||
                  brand.toLowerCase().includes(query) ||
@@ -80,7 +80,7 @@ export const usePOSInventoryByUPC = (upc: string) => {
       
       // Mock UPC lookup - in real app this would be an API call
       const mockItem = sampleInventoryItems[0]; // Use first item as mock
-      if (upc === '194954684154' || upc === String(mockItem.id)) {
+      if (upc === '194954684154' || upc === String((mockItem as any).id)) {
         const transformedItems = transformInventoryForPOS([mockItem]);
         const response = await apiClient.get(`/api/pos/inventory/upc/${upc}`, transformedItems[0]);
         return response.data;
