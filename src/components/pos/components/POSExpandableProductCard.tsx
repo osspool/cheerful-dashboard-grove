@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Package } from 'lucide-react';
 import { usePOS } from '../context/POSContext';
 import { formatCurrency } from '@/lib/utils';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -68,86 +68,99 @@ export const POSExpandableProductCard = ({ product }: ProductCardProps) => {
     });
   };
 
+  const totalVariants = product.variants.length;
+  const inStockVariants = product.variants.filter(v => v.quantity > 0).length;
+
   return (
-    <Card className="w-full">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-              <span className="text-xs text-muted-foreground">IMG</span>
+    <Card className="w-full hover:shadow-md transition-shadow">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center flex-shrink-0">
+              <Package className="h-6 w-6 text-muted-foreground" />
             </div>
-            <div>
-              <h3 className="font-semibold text-lg">{product.title}</h3>
-              <p className="text-muted-foreground">{product.brand}</p>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-semibold text-base truncate">{product.title}</h3>
+              <p className="text-sm text-muted-foreground">{product.brand}</p>
             </div>
           </div>
           
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <CollapsibleTrigger asChild>
-              <Button variant="default" className="min-w-[140px]">
-                Select Variant
-                {isOpen ? (
-                  <ChevronUp className="ml-2 h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-            
-            <CollapsibleContent className="mt-4">
-              <div className="border-t pt-4">
-                <div className="mb-3">
-                  <h4 className="font-medium text-sm mb-3">Product</h4>
-                  <div className="grid grid-cols-4 gap-4 text-sm font-medium text-muted-foreground mb-2">
-                    <span>Size</span>
-                    <span>Variants</span>
-                    <span></span>
-                    <span></span>
-                  </div>
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="text-xs">
+              {inStockVariants}/{totalVariants} in stock
+            </Badge>
+            <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm">
+                  Select Size
+                  {isOpen ? (
+                    <ChevronUp className="ml-2 h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+            </Collapsible>
+          </div>
+        </div>
+      </CardHeader>
+
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <CollapsibleContent>
+          <CardContent className="pt-0">
+            <div className="border-t pt-4">
+              <div className="grid gap-3">
+                <div className="grid grid-cols-5 gap-3 text-xs font-medium text-muted-foreground px-1">
+                  <span>Size</span>
+                  <span>Price</span>
+                  <span>Cost</span>
+                  <span>Stock</span>
+                  <span></span>
                 </div>
                 
-                <div className="space-y-2">
-                  {product.variants.map((variant) => (
-                    <div key={variant.id} className="grid grid-cols-4 gap-4 items-center py-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-muted rounded flex items-center justify-center">
-                          <span className="text-xs">👟</span>
-                        </div>
-                        <span className="text-sm">{variant.size}</span>
-                      </div>
-                      
-                      <div className="text-sm font-semibold">
-                        {formatCurrency(variant.price)}
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          {formatCurrency(variant.costPrice)}
-                        </span>
-                        <Badge variant="outline" className="text-xs">
-                          Stock: {variant.quantity}
-                        </Badge>
-                      </div>
-                      
-                      <div className="flex justify-end">
-                        <Button
-                          onClick={() => handleAddToCart(variant)}
-                          disabled={variant.quantity === 0}
-                          size="sm"
-                          className="min-w-[100px]"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Add to Sale
-                        </Button>
+                {product.variants.map((variant) => (
+                  <div key={variant.id} className="grid grid-cols-5 gap-3 items-center py-2 px-1 hover:bg-muted/50 rounded-md transition-colors">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 bg-muted rounded flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-medium">{variant.size}</span>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    
+                    <div className="text-sm font-semibold">
+                      {formatCurrency(variant.price)}
+                    </div>
+                    
+                    <div className="text-sm text-muted-foreground">
+                      {formatCurrency(variant.costPrice)}
+                    </div>
+                    
+                    <div>
+                      <Badge 
+                        variant={variant.quantity > 0 ? "default" : "secondary"} 
+                        className="text-xs"
+                      >
+                        {variant.quantity}
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={() => handleAddToCart(variant)}
+                        disabled={variant.quantity === 0}
+                        size="sm"
+                        className="h-8 px-3"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
-      </CardContent>
+            </div>
+          </CardContent>
+        </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 };
