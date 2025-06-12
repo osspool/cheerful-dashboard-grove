@@ -37,8 +37,9 @@ export const usePOSSales = (dateRange?: { from: Date; to: Date }) => {
         });
       }
       
-      const response = await apiClient.get('/api/pos/sales', filteredSales);
-      return response.data;
+      // For now, return the filtered mock data directly
+      // TODO: Replace with actual API call when backend is ready
+      return filteredSales;
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
@@ -51,8 +52,9 @@ export const usePOSSaleById = (saleId: string) => {
       const sale = mockSales.find(s => s.id === saleId);
       if (!sale) throw new Error('Sale not found');
       
-      const response = await apiClient.get(`/api/pos/sales/${saleId}`, sale);
-      return response.data;
+      // For now, return the mock data directly
+      // TODO: Replace with actual API call when backend is ready
+      return sale;
     },
     enabled: !!saleId,
     staleTime: 5 * 60 * 1000, // 5 minutes
@@ -70,8 +72,10 @@ export const useCreateSale = () => {
         createdAt: new Date().toISOString(),
       };
       
-      const response = await apiClient.post('/api/pos/sales', newSale);
-      return response.data;
+      // For now, just return the new sale
+      // TODO: Replace with actual API call when backend is ready
+      console.log('Creating sale:', newSale);
+      return newSale;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pos-sales'] });
@@ -97,8 +101,10 @@ export const useProcessReturn = () => {
         createdAt: new Date().toISOString(),
       };
       
-      const response = await apiClient.post(`/api/pos/sales/${saleId}/returns`, adjustment);
-      return response.data;
+      // For now, just return the adjustment
+      // TODO: Replace with actual API call when backend is ready
+      console.log('Processing return:', adjustment);
+      return adjustment;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pos-sales'] });
