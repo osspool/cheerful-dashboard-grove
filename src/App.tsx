@@ -12,6 +12,7 @@ import BulkAdd from "./pages/BulkAdd";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import POS from "./pages/POS";
+import SalesAnalytics from "./pages/SalesAnalytics";
 import { QueryProvider } from "./providers/QueryProvider";
 
 const App = () => {
@@ -32,6 +33,7 @@ const App = () => {
             <Route path="/scanner" element={<QuickScanner />} />
             <Route path="/bulk-add" element={<BulkAdd />} />
             <Route path="/pos" element={<POS />} />
+            <Route path="/sales-analytics" element={<SalesAnalytics />} />
             <Route path="/price-rule" element={<Index />} />
             <Route path="/settings" element={<Index />} />
             <Route path="/favorite" element={<Index />} />

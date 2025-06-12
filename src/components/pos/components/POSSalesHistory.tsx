@@ -6,11 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Calendar, Search, Receipt, RotateCcw, FileText, Eye, Truck, Package } from 'lucide-react';
+import { Calendar, Search, Receipt, RotateCcw, FileText, Eye, Truck, Package, BarChart3 } from 'lucide-react';
 import { usePOSSales } from '../hooks/usePOSSales';
 import { POSSaleManagement } from './POSSaleManagement';
+import { calculateSaleProfit } from '../utils/profitCalculations';
 import { formatCurrency } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 export const POSSalesHistory = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,6 +50,12 @@ export const POSSalesHistory = () => {
 
   const totalSales = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
   const avgSale = filteredSales.length > 0 ? totalSales / filteredSales.length : 0;
+  
+  // Calculate total profit
+  const totalProfit = filteredSales.reduce((sum, sale) => {
+    const profit = calculateSaleProfit(sale);
+    return sum + profit.netProfit;
+  }, 0);
 
   // Status summary
   const statusCounts = filteredSales.reduce((acc, sale) => {
@@ -66,8 +74,18 @@ export const POSSalesHistory = () => {
 
   return (
     <div className="space-y-6">
+      {/* Analytics Link */}
+      <div className="flex justify-end">
+        <Button asChild variant="outline">
+          <Link to="/sales-analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            View Detailed Analytics
+          </Link>
+        </Button>
+      </div>
+
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -85,6 +103,16 @@ export const POSSalesHistory = () => {
               <span className="text-sm font-medium">Revenue</span>
             </div>
             <p className="text-2xl font-bold">{formatCurrency(totalSales)}</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Total Profit</span>
+            </div>
+            <p className="text-2xl font-bold">{formatCurrency(totalProfit)}</p>
           </CardContent>
         </Card>
         
@@ -159,65 +187,72 @@ export const POSSalesHistory = () => {
                 <TableHead>Date</TableHead>
                 <TableHead>Items</TableHead>
                 <TableHead>Total</TableHead>
+                <TableHead>Profit</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Adjustments</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSales.map((sale) => (
-                <TableRow key={sale.id}>
-                  <TableCell className="font-mono">{sale.id}</TableCell>
-                  <TableCell>
-                    {format(new Date(sale.createdAt), 'MMM dd, yyyy HH:mm')}
-                  </TableCell>
-                  <TableCell>{sale.items.length}</TableCell>
-                  <TableCell className="font-medium">
-                    {formatCurrency(sale.total)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(sale.status)}>
-                      {getStatusIcon(sale.status)}
-                      {sale.status.replace('_', ' ')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {sale.adjustments && sale.adjustments.length > 0 ? (
-                      <Badge variant="outline" className="text-xs">
-                        {sale.adjustments.length} adj.
+              {filteredSales.map((sale) => {
+                const saleProfit = calculateSaleProfit(sale);
+                return (
+                  <TableRow key={sale.id}>
+                    <TableCell className="font-mono">{sale.id}</TableCell>
+                    <TableCell>
+                      {format(new Date(sale.createdAt), 'MMM dd, yyyy HH:mm')}
+                    </TableCell>
+                    <TableCell>{sale.items.length}</TableCell>
+                    <TableCell className="font-medium">
+                      {formatCurrency(sale.total)}
+                    </TableCell>
+                    <TableCell className={`font-medium ${saleProfit.netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(saleProfit.netProfit)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(sale.status)}>
+                        {getStatusIcon(sale.status)}
+                        {sale.status.replace('_', ' ')}
                       </Badge>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                      <SheetTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => setSelectedSale(sale)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent className="w-[400px] sm:w-[540px]">
-                        <SheetHeader>
-                          <SheetTitle>Sale Management - {selectedSale?.id}</SheetTitle>
-                        </SheetHeader>
-                        <div className="mt-6">
-                          {selectedSale && (
-                            <POSSaleManagement 
-                              sale={selectedSale} 
-                              onUpdate={() => setIsSheetOpen(false)}
-                            />
-                          )}
-                        </div>
-                      </SheetContent>
-                    </Sheet>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell>
+                      {sale.adjustments && sale.adjustments.length > 0 ? (
+                        <Badge variant="outline" className="text-xs">
+                          {sale.adjustments.length} adj.
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                        <SheetTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => setSelectedSale(sale)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </SheetTrigger>
+                        <SheetContent className="w-[400px] sm:w-[540px]">
+                          <SheetHeader>
+                            <SheetTitle>Sale Management - {selectedSale?.id}</SheetTitle>
+                          </SheetHeader>
+                          <div className="mt-6">
+                            {selectedSale && (
+                              <POSSaleManagement 
+                                sale={selectedSale} 
+                                onUpdate={() => setIsSheetOpen(false)}
+                              />
+                            )}
+                          </div>
+                        </SheetContent>
+                      </Sheet>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
 
