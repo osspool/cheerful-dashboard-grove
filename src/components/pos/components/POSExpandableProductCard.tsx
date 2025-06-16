@@ -42,7 +42,7 @@ export const POSExpandableProductCard = ({ product }: ProductCardProps) => {
 
   const handleVariantSelect = (variant: ProductVariant) => {
     setSelectedVariant(variant);
-    setSellingPrice(variant.price.toString());
+    setSellingPrice(variant.price?.toString() || '');
     setIsOpen(false);
   };
 
@@ -137,7 +137,8 @@ export const POSExpandableProductCard = ({ product }: ProductCardProps) => {
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
               <CollapsibleTrigger asChild>
                 <Button variant="outline" size="sm">
-                  Create Order
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add to Order
                   {isOpen ? (
                     <ChevronUp className="ml-2 h-4 w-4" />
                   ) : (
