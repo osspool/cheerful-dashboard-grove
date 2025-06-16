@@ -2,54 +2,65 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 import { POSCartItem, POSInventoryItem } from '../types';
 
-// Rename POSCartItem to POSOrder for clarity
-interface POSOrder extends Omit<POSCartItem, 'id'> {
-  id: string;
-  createdAt: string;
-  updatedAt?: string;
-}
-
 interface POSState {
-  orders: POSOrder[];
+  cartItems: POSCartItem[];
   searchQuery: string;
   selectedPlatform: 'stockx' | 'goat' | 'external';
 }
 
 type POSAction = 
-  | { type: 'CREATE_ORDER'; payload: POSOrder }
-  | { type: 'UPDATE_ORDER'; payload: { id: string; updates: Partial<POSOrder> } }
-  | { type: 'DELETE_ORDER'; payload: string }
+  | { type: 'ADD_TO_CART'; payload: { inventoryItem: POSInventoryItem; platform: 'stockx' | 'goat' | 'external' } }
+  | { type: 'REMOVE_FROM_CART'; payload: string }
+  | { type: 'UPDATE_CART_ITEM'; payload: { id: string; updates: Partial<POSCartItem> } }
+  | { type: 'CLEAR_CART' }
   | { type: 'SET_SEARCH_QUERY'; payload: string }
   | { type: 'SET_PLATFORM'; payload: 'stockx' | 'goat' | 'external' };
 
 const initialState: POSState = {
-  orders: [],
+  cartItems: [],
   searchQuery: '',
-  selectedPlatform: 'stockx',
+  selectedPlatform: 'external',
 };
+
+const generateCartItemId = () => `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 const posReducer = (state: POSState, action: POSAction): POSState => {
   switch (action.type) {
-    case 'CREATE_ORDER':
+    case 'ADD_TO_CART':
+      const newItem: POSCartItem = {
+        id: generateCartItemId(),
+        inventoryItem: action.payload.inventoryItem,
+        sellingPrice: action.payload.inventoryItem.retail_price,
+        costPrice: action.payload.inventoryItem.wholesale_price || action.payload.inventoryItem.retail_price * 0.7,
+        platform: action.payload.platform,
+        status: 'pending',
+        adjustments: [],
+      };
       return {
         ...state,
-        orders: [action.payload, ...state.orders], // Add new orders at the top
+        cartItems: [...state.cartItems, newItem],
       };
     
-    case 'UPDATE_ORDER':
+    case 'REMOVE_FROM_CART':
       return {
         ...state,
-        orders: state.orders.map(order =>
-          order.id === action.payload.id
-            ? { ...order, ...action.payload.updates, updatedAt: new Date().toISOString() }
-            : order
+        cartItems: state.cartItems.filter(item => item.id !== action.payload),
+      };
+    
+    case 'UPDATE_CART_ITEM':
+      return {
+        ...state,
+        cartItems: state.cartItems.map(item =>
+          item.id === action.payload.id
+            ? { ...item, ...action.payload.updates }
+            : item
         ),
       };
     
-    case 'DELETE_ORDER':
+    case 'CLEAR_CART':
       return {
         ...state,
-        orders: state.orders.filter(order => order.id !== action.payload),
+        cartItems: [],
       };
     
     case 'SET_SEARCH_QUERY':
