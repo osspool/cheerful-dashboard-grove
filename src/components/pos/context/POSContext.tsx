@@ -36,9 +36,10 @@ const posReducer = (state: POSState, action: POSAction): POSState => {
         status: 'pending',
         adjustments: [],
       };
+      // Replace existing item instead of adding to cart (only one item per sale)
       return {
         ...state,
-        cartItems: [...state.cartItems, newItem],
+        cartItems: [newItem],
       };
     
     case 'REMOVE_FROM_CART':
