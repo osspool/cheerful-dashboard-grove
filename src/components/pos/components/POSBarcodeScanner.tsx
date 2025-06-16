@@ -8,12 +8,14 @@ import { usePOS } from '../context/POSContext';
 import { usePOSInventoryByUPC } from '../hooks/usePOSInventory';
 import { formatCurrency } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 export const POSBarcodeScanner = () => {
   const [upc, setUpc] = useState('');
   const [searchUpc, setSearchUpc] = useState('');
   const { dispatch, state } = usePOS();
   const { data: inventoryItem, isLoading, error } = usePOSInventoryByUPC(searchUpc);
+  const { toast } = useToast();
 
   const handleScan = () => {
     if (upc.trim()) {
@@ -21,15 +23,28 @@ export const POSBarcodeScanner = () => {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleCreateOrder = () => {
     if (inventoryItem) {
+      const newOrder = {
+        id: `ORDER-${Date.now()}`,
+        inventoryItem,
+        sellingPrice: inventoryItem.retail_price,
+        costPrice: inventoryItem.wholesale_price || 0,
+        platform: state.selectedPlatform,
+        status: 'pending' as const,
+        createdAt: new Date().toISOString(),
+      };
+
       dispatch({
-        type: 'ADD_TO_CART',
-        payload: {
-          inventoryItem,
-          platform: state.selectedPlatform,
-        },
+        type: 'CREATE_ORDER',
+        payload: newOrder,
       });
+
+      toast({
+        title: "Order Created",
+        description: `Order ${newOrder.id} created successfully for ${inventoryItem.product.title}`,
+      });
+
       setUpc('');
       setSearchUpc('');
     }
@@ -111,11 +126,11 @@ export const POSBarcodeScanner = () => {
             </div>
             
             <Button
-              onClick={handleAddToCart}
+              onClick={handleCreateOrder}
               disabled={inventoryItem.quantity === 0}
               className="w-full"
             >
-              Add to Sale
+              Create Order
             </Button>
           </CardContent>
         </Card>
