@@ -1,200 +1,130 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/utils/apiClient';
+import { salesApiClient, SalesOrder, LocalStatus, ListOrdersParams } from '@/utils/salesApiClient';
 import { POSSale, POSAdjustment } from '../types';
 
-// Mock sales data with item-level status tracking
-const mockSales: POSSale[] = [
-  {
-    id: 'SALE-001',
-    items: [
-      {
-        id: 'item-001-1',
-        inventoryItem: {
-          id: 'inv-001',
-          upc: '123456789012',
-          product: {
-            id: 'prod-001',
-            title: 'Air Jordan 1 Retro High OG',
-            brand: 'Nike',
-            styleId: 'AJ1-001',
-            platform: ['stockx', 'goat'],
-          },
-          variant: {
-            id: 'var-001',
-            product: 'prod-001',
-            styleId: 'AJ1-001',
-            stockx: {
-              productId: 'stockx-001',
-              variantId: 'var-001',
-              variantName: 'Size',
-              variantValue: '10.5',
-            },
-          },
-          quantity: 1,
-          retail_price: 299.99,
-          wholesale_price: 180.00,
-          location: ['A1'],
-          platforms_available: ['stockx', 'goat'],
+// Helper function to convert SalesOrder to POSSale format for backward compatibility
+const convertSalesOrderToPOSSale = (order: SalesOrder): POSSale => {
+  return {
+    id: order._id,
+    items: [{
+      id: `item-${order._id}`,
+      inventoryItem: {
+        id: order.inventoryId as string,
+        upc: '123456789012', // This would come from populated inventory data
+        product: {
+          id: order.product.productId as string,
+          title: order.product.name,
+          brand: order.product.brand || '',
+          styleId: order.product.styleId || '',
+          platform: [order.platform],
         },
-        sellingPrice: 299.99,
-        costPrice: 180.00,
-        platform: 'stockx',
-        status: 'delivered',
-        shippingDetails: {
-          trackingNumber: 'TRK123456789',
-          carrier: 'UPS',
-          shippedAt: new Date(Date.now() - 43200000).toISOString(),
-          deliveredAt: new Date(Date.now() - 21600000).toISOString(),
+        variant: {
+          id: `var-${order._id}`,
+          product: order.product.productId as string,
+          styleId: order.product.styleId || '',
+          general: {
+            size: order.product.size || '',
+            size_unit: 'US',
+          },
         },
-        adjustments: [],
+        quantity: order.quantity,
+        retail_price: order.soldPrice,
+        wholesale_price: order.costPrice,
+        location: ['warehouse-1'],
+        platforms_available: [order.platform],
       },
-    ],
-    subtotal: 299.99,
-    total: 299.99,
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
-    status: 'completed',
-    paymentMethod: 'card',
-  },
-  {
-    id: 'SALE-002',
-    items: [
-      {
-        id: 'item-002-1',
-        inventoryItem: {
-          id: 'inv-002',
-          upc: '123456789013',
-          product: {
-            id: 'prod-002',
-            title: 'Yeezy Boost 350 V2',
-            brand: 'Adidas',
-            styleId: 'YZY-350',
-            platform: ['stockx', 'goat'],
-          },
-          variant: {
-            id: 'var-002',
-            product: 'prod-002',
-            styleId: 'YZY-350',
-            general: {
-              size: '9',
-              size_unit: 'US',
-            },
-          },
-          quantity: 1,
-          retail_price: 149.99,
-          wholesale_price: 90.00,
-          location: ['B2'],
-          platforms_available: ['stockx', 'goat'],
-        },
-        sellingPrice: 149.99,
-        costPrice: 90.00,
-        platform: 'goat',
-        status: 'confirmed',
-        adjustments: [],
-      },
-      {
-        id: 'item-002-2',
-        inventoryItem: {
-          id: 'inv-003',
-          upc: '123456789014',
-          product: {
-            id: 'prod-003',
-            title: 'Nike Dunk Low',
-            brand: 'Nike',
-            styleId: 'DUNK-LOW',
-            platform: ['stockx'],
-          },
-          variant: {
-            id: 'var-003',
-            product: 'prod-003',
-            styleId: 'DUNK-LOW',
-            general: {
-              size: '8.5',
-              size_unit: 'US',
-            },
-          },
-          quantity: 1,
-          retail_price: 110.00,
-          wholesale_price: 70.00,
-          location: ['C1'],
-          platforms_available: ['stockx'],
-        },
-        sellingPrice: 110.00,
-        costPrice: 70.00,
-        platform: 'stockx',
-        status: 'shipped',
-        shippingDetails: {
-          trackingNumber: 'TRK987654321',
-          carrier: 'FedEx',
-          shippedAt: new Date(Date.now() - 21600000).toISOString(),
-        },
-        adjustments: [],
-      },
-    ],
-    subtotal: 259.99,
-    total: 259.99,
-    createdAt: new Date(Date.now() - 43200000).toISOString(),
-    status: 'partial',
-    paymentMethod: 'cash',
-  },
-  {
-    id: 'SALE-003',
-    items: [
-      {
-        id: 'item-003-1',
-        inventoryItem: {
-          id: 'inv-004',
-          upc: '123456789015',
-          product: {
-            id: 'prod-004',
-            title: 'Off-White x Nike Air Force 1',
-            brand: 'Nike',
-            styleId: 'OW-AF1',
-            platform: ['stockx', 'goat'],
-          },
-          variant: {
-            id: 'var-004',
-            product: 'prod-004',
-            styleId: 'OW-AF1',
-            general: {
-              size: '11',
-              size_unit: 'US',
-            },
-          },
-          quantity: 1,
-          retail_price: 89.99,
-          wholesale_price: 50.00,
-          location: ['A3'],
-          platforms_available: ['stockx', 'goat'],
-        },
-        sellingPrice: 89.99,
-        costPrice: 50.00,
-        platform: 'external',
-        status: 'pending',
-        adjustments: [],
-      },
-    ],
-    subtotal: 89.99,
-    total: 89.99,
-    createdAt: new Date(Date.now() - 21600000).toISOString(),
-    status: 'pending',
-    paymentMethod: 'card',
-  },
-];
+      sellingPrice: order.soldPrice,
+      costPrice: order.costPrice,
+      platform: order.platform,
+      status: mapLocalStatusToItemStatus(order.localStatus),
+      adjustments: order.customAdjustments?.map(adj => ({
+        id: `adj-${Date.now()}-${Math.random()}`,
+        saleId: order._id,
+        type: adj.type as POSAdjustment['type'],
+        amount: adj.amount,
+        reason: adj.description || '',
+        createdAt: order.updatedAt,
+      })) || [],
+      shippingDetails: order.shipping ? {
+        trackingNumber: order.shipping.trackingNumber,
+        carrier: order.shipping.carrierCode,
+        shippedAt: order.shipping.shippedAt,
+      } : undefined,
+    }],
+    subtotal: order.soldPrice,
+    total: order.payout?.totalPayout || order.soldPrice,
+    createdAt: order.createdAt,
+    status: mapLocalStatusToSaleStatus(order.localStatus),
+    paymentMethod: 'external', // Since these are platform orders
+    notes: order.notes,
+  };
+};
+
+const mapLocalStatusToItemStatus = (localStatus: LocalStatus): 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' => {
+  switch (localStatus) {
+    case 'PENDING_VERIFICATION':
+    case 'VERIFIED':
+    case 'INVENTORY_ALLOCATED':
+      return 'pending';
+    case 'READY_TO_SHIP':
+      return 'confirmed';
+    case 'SHIPPED':
+      return 'shipped';
+    case 'DELIVERED':
+    case 'COMPLETED':
+      return 'delivered';
+    case 'CANCELLED':
+    case 'REFUNDED':
+      return 'cancelled';
+    default:
+      return 'pending';
+  }
+};
+
+const mapLocalStatusToSaleStatus = (localStatus: LocalStatus): 'pending' | 'completed' | 'partial' | 'cancelled' => {
+  switch (localStatus) {
+    case 'PENDING_VERIFICATION':
+    case 'VERIFIED':
+    case 'INVENTORY_ALLOCATED':
+    case 'READY_TO_SHIP':
+      return 'pending';
+    case 'SHIPPED':
+      return 'partial';
+    case 'DELIVERED':
+    case 'COMPLETED':
+      return 'completed';
+    case 'CANCELLED':
+    case 'REFUNDED':
+      return 'cancelled';
+    default:
+      return 'pending';
+  }
+};
 
 export const usePOSSales = (dateRange?: { from: Date; to: Date }) => {
   return useQuery({
     queryKey: ['pos-sales', dateRange],
     queryFn: async () => {
-      let filteredSales = mockSales;
+      const params: ListOrdersParams = {
+        page: 1,
+        limit: 100,
+        defaultPopulate: true,
+      };
+
+      const response = await salesApiClient.listOrders(params);
+      
+      let filteredOrders = response.docs;
       
       if (dateRange) {
-        filteredSales = mockSales.filter(sale => {
-          const saleDate = new Date(sale.createdAt);
-          return saleDate >= dateRange.from && saleDate <= dateRange.to;
+        filteredOrders = response.docs.filter(order => {
+          const orderDate = new Date(order.createdAt);
+          return orderDate >= dateRange.from && orderDate <= dateRange.to;
         });
       }
       
-      return filteredSales;
+      // Convert to POSSale format for backward compatibility
+      return filteredOrders.map(convertSalesOrderToPOSSale);
     },
     staleTime: 2 * 60 * 1000,
   });
@@ -204,9 +134,8 @@ export const usePOSSaleById = (saleId: string) => {
   return useQuery({
     queryKey: ['pos-sale', saleId],
     queryFn: async () => {
-      const sale = mockSales.find(s => s.id === saleId);
-      if (!sale) throw new Error('Sale not found');
-      return sale;
+      const response = await salesApiClient.getOrderById(saleId, 'inventoryId,product.productId');
+      return convertSalesOrderToPOSSale(response.data);
     },
     enabled: !!saleId,
     staleTime: 5 * 60 * 1000,
@@ -218,15 +147,59 @@ export const useCreateSale = () => {
   
   return useMutation({
     mutationFn: async (saleData: Omit<POSSale, 'id' | 'createdAt'>) => {
+      // For backward compatibility, create a local sale record
       const newSale: POSSale = {
         ...saleData,
         id: `SALE-${Date.now()}`,
         createdAt: new Date().toISOString(),
-        status: 'pending', // Always start as pending
+        status: 'pending',
       };
       
-      console.log('Creating sale:', newSale);
+      console.log('Creating local sale:', newSale);
       return newSale;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['pos-sales'] });
+    },
+  });
+};
+
+export const useCreateOrderFromPlatform = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (orderData: {
+      platform: 'stockx' | 'goat';
+      platformOrderId: string;
+      inventoryId: string;
+      productData: any;
+      costPrice: number;
+      soldPrice: number;
+      payout: any;
+      notes?: string;
+    }) => {
+      const createOrderRequest = {
+        platform: orderData.platform,
+        platformOrderId: orderData.platformOrderId,
+        inventoryId: orderData.inventoryId,
+        product: {
+          productId: orderData.productData.productId,
+          name: orderData.productData.name,
+          brand: orderData.productData.brand,
+          styleId: orderData.productData.styleId,
+          size: orderData.productData.size,
+        },
+        costPrice: orderData.costPrice,
+        soldPrice: orderData.soldPrice,
+        payout: orderData.payout,
+        platformStatus: 'COMPLETED',
+        soldAt: new Date().toISOString(),
+        notes: orderData.notes,
+      };
+
+      const response = await salesApiClient.createOrder(createOrderRequest);
+      console.log('Created platform order:', response.data);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pos-sales'] });
@@ -247,15 +220,19 @@ export const useUpdateSaleStatus = () => {
       status: POSSale['status'];
       shippingDetails?: POSSale['shippingDetails'];
     }) => {
-      const updatedSale = {
-        saleId,
-        status,
-        shippingDetails,
-        updatedAt: new Date().toISOString(),
-      };
+      // Map POSSale status to LocalStatus
+      const localStatus: LocalStatus = status === 'completed' ? 'COMPLETED' :
+                                     status === 'partial' ? 'SHIPPED' :
+                                     status === 'cancelled' ? 'CANCELLED' : 'PENDING_VERIFICATION';
+
+      const response = await salesApiClient.updateOrderStatus(
+        saleId, 
+        localStatus, 
+        shippingDetails ? `Tracking: ${shippingDetails.trackingNumber}` : undefined
+      );
       
-      console.log('Updating sale status:', updatedSale);
-      return updatedSale;
+      console.log('Updated order status:', response.data);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pos-sales'] });
@@ -278,6 +255,7 @@ export const useAddSaleAdjustment = () => {
       amount: number;
       reason: string;
     }) => {
+      // For now, just log the adjustment - in a real app this would call the backend
       const adjustment: POSAdjustment = {
         id: `ADJ-${Date.now()}`,
         saleId,
@@ -305,17 +283,9 @@ export const useProcessReturn = () => {
       items: string[];
       reason: string;
     }) => {
-      const adjustment: POSAdjustment = {
-        id: `ADJ-${Date.now()}`,
-        saleId,
-        type: 'return',
-        amount: 0,
-        reason,
-        createdAt: new Date().toISOString(),
-      };
-      
-      console.log('Processing return:', adjustment);
-      return adjustment;
+      const response = await salesApiClient.updateOrderStatus(saleId, 'REFUNDED', `Return: ${reason}`);
+      console.log('Processing return:', response.data);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pos-sales'] });
