@@ -58,7 +58,7 @@ const convertSalesOrderToPOSSale = (order: SalesOrder): POSSale => {
     createdAt: order.createdAt,
     status: mapLocalStatusToSaleStatus(order.localStatus),
     paymentMethod: 'card', // Changed from 'external' to valid payment method
-    notes: order.notes,
+    customerNotes: order.notes, // Changed from 'notes' to 'customerNotes'
   };
 };
 
