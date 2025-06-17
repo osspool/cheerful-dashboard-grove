@@ -1,4 +1,3 @@
-
 import { apiClient, ApiResponse } from './apiClient';
 
 export interface SalesOrder {
@@ -201,7 +200,7 @@ export const salesApiClient = {
       }
     };
 
-    return apiClient.get(
+    const response = await apiClient.get(
       `/api/sales/orders/platform/${platform}/${platformOrderId}`,
       {
         success: true,
@@ -212,6 +211,9 @@ export const salesApiClient = {
         message: 'Order data ready for creation'
       }
     );
+
+    // Return the response data directly since it matches OrderLookupResponse
+    return response.data;
   },
 
   // Create new order
@@ -278,7 +280,7 @@ export const salesApiClient = {
       }
     ];
 
-    return apiClient.get('/api/sales/orders', {
+    const response = await apiClient.get('/api/sales/orders', {
       success: true,
       docs: mockOrders,
       totalDocs: mockOrders.length,
@@ -290,6 +292,9 @@ export const salesApiClient = {
       nextPage: null,
       prevPage: null
     });
+
+    // Return the response data directly since it matches ListOrdersResponse
+    return response.data;
   },
 
   // Get order by ID

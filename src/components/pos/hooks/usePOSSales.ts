@@ -41,6 +41,7 @@ const convertSalesOrderToPOSSale = (order: SalesOrder): POSSale => {
       adjustments: order.customAdjustments?.map(adj => ({
         id: `adj-${Date.now()}-${Math.random()}`,
         saleId: order._id,
+        itemId: `item-${order._id}`, // Added missing itemId
         type: adj.type as POSAdjustment['type'],
         amount: adj.amount,
         reason: adj.description || '',
@@ -56,7 +57,7 @@ const convertSalesOrderToPOSSale = (order: SalesOrder): POSSale => {
     total: order.payout?.totalPayout || order.soldPrice,
     createdAt: order.createdAt,
     status: mapLocalStatusToSaleStatus(order.localStatus),
-    paymentMethod: 'external', // Since these are platform orders
+    paymentMethod: 'card', // Changed from 'external' to valid payment method
     notes: order.notes,
   };
 };
@@ -218,7 +219,7 @@ export const useUpdateSaleStatus = () => {
     }: {
       saleId: string;
       status: POSSale['status'];
-      shippingDetails?: POSSale['shippingDetails'];
+      shippingDetails?: { trackingNumber?: string; carrier?: string; shippedAt?: string; };
     }) => {
       // Map POSSale status to LocalStatus
       const localStatus: LocalStatus = status === 'completed' ? 'COMPLETED' :
