@@ -2,8 +2,7 @@
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShoppingCart, History, RotateCcw } from 'lucide-react';
-import { POSProductSearch } from './POSProductSearch';
-import { POSCart } from './POSCart';
+import { POSResponsiveLayout } from './POSResponsiveLayout';
 import { POSSalesHistory } from './POSSalesHistory';
 
 export const POSMainInterface = () => {
@@ -28,17 +27,7 @@ export const POSMainInterface = () => {
 
       <div className="flex-1 overflow-hidden">
         <TabsContent value="sale" className="h-full m-0">
-          <div className="flex h-full">
-            {/* Product Selection Side */}
-            <div className="flex-1 border-r bg-background">
-              <POSProductSearch />
-            </div>
-            
-            {/* Cart/Checkout Side */}
-            <div className="w-96 bg-card/30">
-              <POSCart />
-            </div>
-          </div>
+          <POSResponsiveLayout />
         </TabsContent>
 
         <TabsContent value="history" className="h-full m-0 p-6 overflow-y-auto">
